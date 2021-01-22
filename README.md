@@ -58,6 +58,25 @@ contigs >= 500bp = 138
 contigs >= 1000bp = 138
 contigs >= 2000bp = 135
 
+stephanieperez@MacBook-Pro-2 ~/D/D/21sp_advgenomics> cd 21SPStephGAdvancedGenomicsLog/
+stephanieperez@MacBook-Pro-2 ~/D/D/2/21SPStephGAdvancedGenomicsLog> ls
+README.md
+stephanieperez@MacBook-Pro-2 ~/D/D/2/21SPStephGAdvancedGenomicsLog>  git add README.md 
+stephanieperez@MacBook-Pro-2 ~/D/D/2/21SPStephGAdvancedGenomicsLog> 
+git commit -m 'updating with day02 exercises'
+[main 552e36f] updating with day02 exercises
+ 1 file changed, 81 insertions(+)
+stephanieperez@MacBook-Pro-2 ~/D/D/2/21SPStephGAdvancedGenomicsLog> git push -u origin main
+Enumerating objects: 5, done.
+Counting objects: 100% (5/5), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (2/2), done.
+Writing objects: 100% (3/3), 1.37 KiB | 1.38 MiB/s, done.
+Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+To https://github.com/lorenapr92/21SPStephGAdvanceGenomicslog.git
+   e726f87..552e36f  main -> main
+Branch 'main' set up to track remote branch 'main' from 'origin'.
+
 #Homework2
 cd /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/
 emacs emacs StephFQCp.sh
@@ -79,5 +98,28 @@ squeue -u spere004
            9268702      main StephFQC spere004  R       0:19      1 coreV3-23-044 
 
 emacs StephGZfq.sh
-#inside shell script
+inside shell script
+#!/bin/bash -l                                                                                              
 
+#SBATCH -o stephgzfastqcopy.txt                                                                              
+#SBATCH -n 1                                                                                                 
+#SBATCH --mail-user=spere004@odu.edu                                                                         
+#SBATCH --mail-type=END                                                                                      
+#SBATCH --job-name=StephGZfq                                                                                 
+
+gunzip /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/*.fastq.gz
+
+[spere004@turing1 data]$ sbatch StephGZfq.sh
+Submitted batch job 9268787
+[spere004@turing1 data]$ squeue -u spere004
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON) 
+           9268786      main       sh spere004  R       7:52      1 coreV3-23-024 
+           9268787      main StephGZf spere004  R       0:25      1 coreV1-22-005 
+
+[spere004@turing1 data]$ ls
+HADB01-A_S17_L002_R1_001.fastq     HADB03-C_S51_L004_R1_001.fastq.gz  HADB05-F_S86_L006_R1_001.fastq.gz
+HADB01-B_S18_L002_R1_001.fastq     HADB03-D_S52_L004_R1_001.fastq.gz  HADB05-G_S87_L006_R1_001.fastq.gz
+HADB01-C_S19_L002_R1_001.fastq     HADB03-E_S53_L004_R1_001.fastq.gz  HADB05-H_S88_L006_R1_001.fastq.gz
+HADB01-D_S20_L002_R1_001.fastq     HADB03-F_S54_L004_R1_001.fastq.gz  HADB05-I_S89_L006_R1_001.fastq.gz
+HADB01-E_S21_L002_R1_001.fastq     HADB03-G_S55_L004_R1_001.fastq.gz  HADB05-J_S90_L006_R1_001.fastq.gz
+HADB01-F_S22_L002_R1_001.fastq  
