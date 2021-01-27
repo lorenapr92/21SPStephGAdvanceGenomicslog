@@ -123,3 +123,57 @@ HADB01-C_S19_L002_R1_001.fastq     HADB03-E_S53_L004_R1_001.fastq.gz  HADB05-H_S
 HADB01-D_S20_L002_R1_001.fastq     HADB03-F_S54_L004_R1_001.fastq.gz  HADB05-I_S89_L006_R1_001.fastq.gz
 HADB01-E_S21_L002_R1_001.fastq     HADB03-G_S55_L004_R1_001.fastq.gz  HADB05-J_S90_L006_R1_001.fastq.gz
 HADB01-F_S22_L002_R1_001.fastq  
+
+DAY03
+1. cp -r /cm/shared/courses/dbarshis/21AdvGenomics/assignments_exercises/day03 ./
+pwd
+/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data
+2. mkdir fastq
+mv *.fastq fastq/
+ls
+cd fastq/
+ls
+3. cp renamingtable_complete.txt /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq
+/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/scripts
+cp /cm/shared/courses/dbarshis/21AdvGenomics/scripts/renamer_advbioinf.py ./
+less renamer_advbioinf.py 
+4. module load python
+python renamer_advbioinf.py /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq/renamingtable_complete.txt /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq/*.fastq
+
+
+5. nano renamer_advbioinf.py
+#!/usr/bin/env python
+####usage renamer.py renamingtable
+#### this script take the entries in the first column of table and renames (mv's) them to files with the nam$
+import sys
+import os
+
+fin=open(sys.argv[1],'r')
+linecount=0
+for line in fin:
+        linecount+=1
+        if linecount>=2:
+                cols=line.rstrip().split('\t')
+#               print 'mv %s %s' %(cols[0], cols[1])
+                os.popen('mv %s %s' %(cols[0], cols[1]))
+
+6. nano Steph_Renamer.sh
+#!/bin/bash -l
+
+#SBATCH -o steph_renamercopy.txt
+#SBATCH -n 1
+#SBATCH --mail-user=spere004@odu.edu
+#SBATCH --mail-type=END
+#SBATCH --job-name=Steph_Renamer
+
+module load python
+python renamer_advbioinf.py /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq/renamingtable_complete.txt /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq/*.fastq
+sbatch Steph_Renamer.sh
+Submitted batch job 9270551
+
+7. DONE
+[spere004@turing1 scripts]$ pwd
+10. /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/scripts
+cp /cm/shared/courses/dbarshis/21AdvGenomics/scripts/Trimclipfilterstatsbatch_advbioinf.py ./
+11. less Trimclipfilterstatsbatch_advbioinf.py
+
