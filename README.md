@@ -166,14 +166,15 @@ for line in fin:
 #SBATCH --mail-type=END
 #SBATCH --job-name=Steph_Renamer
 
-module load python
-python renamer_advbioinf.py /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq/renamingtable_complete.txt /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq/*.fastq
-sbatch Steph_Renamer.sh
-Submitted batch job 9270551
+python /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/scripts/renamer_advbioinf.py renamingtable_complete.txt
+
+sbatch Steph_Renamer.sh 
+Submitted batch job 9271073
 
 7. DONE
+
 [spere004@turing1 scripts]$ pwd
-10. /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/scripts
-cp /cm/shared/courses/dbarshis/21AdvGenomics/scripts/Trimclipfilterstatsbatch_advbioinf.py ./
+/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/scripts
+10. cp /cm/shared/courses/dbarshis/21AdvGenomics/scripts/Trimclipfilterstatsbatch_advbioinf.py ./
 11. less Trimclipfilterstatsbatch_advbioinf.py
 
