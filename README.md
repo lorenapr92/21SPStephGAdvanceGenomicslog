@@ -177,4 +177,19 @@ Submitted batch job 9271073
 /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/scripts
 10. cp /cm/shared/courses/dbarshis/21AdvGenomics/scripts/Trimclipfilterstatsbatch_advbioinf.py ./
 11. less Trimclipfilterstatsbatch_advbioinf.py
+12. pwd
+/cm/shared/courses/dbarshis/21AdvGenomics/assignments_exercises/day03
+[spere004@turing1 day03]$ cp adapterlist_advbioinf.txt /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq/
+13. [spere004@turing1 fastq]$ nano Steph_Trimclipfilter.sh
+#!/bin/bash -l
 
+#SBATCH -o steph_trimmerclip.txt
+#SBATCH -n 4
+#SBATCH --mail-user=spere004@odu.edu
+#SBATCH --mail-type=END
+#SBATCH --job-name=Steph_Trimmerclipfilter
+
+python /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/scripts/Trimclipfilterstatsbatch_advbioinf.py adapterlist_advbioinf.txt *.fastq
+ 
+[spere004@turing1 fastq]$ sbatch Steph_Trimclipfilter.sh 
+Submitted batch job 9271091
