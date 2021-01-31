@@ -193,3 +193,24 @@ python /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/scripts/Trimcl
  
 [spere004@turing1 fastq]$ sbatch Steph_Trimclipfilter.sh 
 Submitted batch job 9271091
+
+Homework04
+
+1a.  [spere004@turing1 fastq]$ /cm/shared/courses/dbarshis/21AdvGenomics/scripts/Schafran_trimstatstable_advbioinf_clippedtrimmed.py -h
+Written by Peter Schafran pscha005@odu.edu 5-Oct-2015
+
+This script takes a stats output file from fastx_clipper and converts it into a table.
+
+Usage: Schafran_trimstatstable.py [-c, -v, -h] inputfile.txt outputfile.txt
+
+Options (-c and -v must be listed separately to run together):
+-h	Display this help message
+-c	Use comma delimiter instead of tabs
+-v	Verbose mode (print steps to stdout)
+
+1b.  [spere004@turing1 fastq]$ /cm/shared/courses/dbarshis/21AdvGenomics/scripts/Schafran_trimstatstable_advbioinf_clippedtrimmed.py steph_trimmerclip.txt Steph_trimclipstatsout.txt
+Traceback (most recent call last):
+  File "/cm/shared/courses/dbarshis/21AdvGenomics/scripts/Schafran_trimstatstable_advbioinf_clippedtrimmed.py", line 61, in <module>
+    statdict[currentkey].append(data[0])
+NameError: name 'currentkey' is not defined
+
