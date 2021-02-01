@@ -208,9 +208,32 @@ Options (-c and -v must be listed separately to run together):
 -c	Use comma delimiter instead of tabs
 -v	Verbose mode (print steps to stdout)
 
-1b.  [spere004@turing1 fastq]$ /cm/shared/courses/dbarshis/21AdvGenomics/scripts/Schafran_trimstatstable_advbioinf_clippedtrimmed.py steph_trimmerclip.txt Steph_trimclipstatsout.txt
-Traceback (most recent call last):
-  File "/cm/shared/courses/dbarshis/21AdvGenomics/scripts/Schafran_trimstatstable_advbioinf_clippedtrimmed.py", line 61, in <module>
-    statdict[currentkey].append(data[0])
-NameError: name 'currentkey' is not defined
+1b.   pwd
+/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq/filteringstats
+/cm/shared/courses/dbarshis/21AdvGenomics/scripts/Schafran_trimstatstable_advbioinf_clippedtrimmed.py trimclipstats.txt Steph_trimclipstatsout.txt
+head -10 Steph_trimclipstatsout.txt 
+tail -n +2 Steph_trimclipstatsout.txt | head
+1c.  tail -n +2 Steph_trimclipstatsout.txt >> /cm/shared/courses/dbarshis/21AdvGenomics/classdata/Astrangia_poculata/Fulltrimclipstatstable.txt
+
+[spere004@turing1 QCFastqs]$ pwd
+/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq/QCFastqs
+3. nano Steph_clippedtrimmedbowtie.sh
+
+#!/bin/bash -l
+
+#SBATCH -o steph_clippedtrimmedbowtie.txt
+#SBATCH -n 1
+#SBATCH --mail-user=spere004@odu.edu
+#SBATCH --mail-type=END
+#SBATCH --job-name=Steph_clippedtrimmedbowtie
+
+enable_lmod
+module load bowtie2/2.4
+for i in *_clippedtrimmed.fastq; do bowtie2 --rg-id ${i%_clippedtrimmed.fastq} \
+--rg SM:${i%_clippedtrimmed.fastq} \
+--very-sensitive -x /cm/shared/courses/dbarshis/21AdvGenomics/classdata/Astrangia_poculata/refassembly/Apoc_hostsym -U $i \
+> ${i%_clippedtrimmedfilterd.fastq}.sam --no-unal -k 5; done
+
+3. sbatch Steph_clippedtrimmedbowtie.sh
+Submitted batch job 9271724
 
