@@ -264,4 +264,179 @@ sbatch Steph_trinity.sh
 Submitted batch job 9272374
 #w/o --normalized reads
 
+#Homework06
 
+1. [spere004@turing1 QCFastqs]$ salloc
+salloc: Pending job allocation 9272855
+[spere004@coreV2-22-028 QCFastqs]$ cd djbtestassembly/
+[spere004@coreV2-22-028 djbtestassembly]$ ls
+Trinity.fasta
+ /cm/shared/apps/trinity/2.0.6/util/TrinityStats.pl Trinity.fasta
+################################
+## Counts of transcripts, etc.
+################################
+Total trinity 'genes':	20980
+Total trinity transcripts:	21992
+Percent GC: 46.21
+
+########################################
+Stats based on ALL transcript contigs:
+########################################
+
+	Contig N10: 1178
+	Contig N20: 694
+	Contig N30: 514
+	Contig N40: 414
+	Contig N50: 347
+
+	Median contig length: 273
+	Average contig: 356.95
+	Total assembled bases: 7850006
+
+
+#####################################################
+## Stats based on ONLY LONGEST ISOFORM per 'GENE':
+#####################################################
+
+	Contig N10: 1027
+	Contig N20: 643
+	Contig N30: 486
+	Contig N40: 397
+	Contig N50: 336
+
+	Median contig length: 271
+	Average contig: 347.72
+	Total assembled bases: 7295061
+2. [spere004@coreV2-22-028 scripts]$ pwd
+/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/scripts
+ python avg_cov_len_fasta_advbioinf.py /cm/shared/courses/dbarshis/21AdvGenomics/classdata/Astrangia_poculata/refassembly/15079_Apoc_hostsym.fasta
+The total number of sequences is 15079
+The average sequence length is 876
+The total number of bases is 13210470
+The minimum sequence length is 500
+The maximum sequence length is 10795
+The N50 is 881
+Median Length = 578
+contigs < 150bp = 0
+contigs >= 500bp = 15079
+contigs >= 1000bp = 3660
+contigs >= 2000bp = 536
+
+3. [spere004@coreV2-22-028 QCFastqs]$ pwd
+/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq/QCFastqs
+a) grep "overall alignment rate" steph_clippedtrimmedbowtie.txt
+b) grep "aligned exactly 1 time" steph_clippedtrimmedbowtie.txt | cut -d " " -f 5
+c) grep "aligned exactly 1 time" steph_clippedtrimmedbowtie.txt | cut -d "%" -f 1 | cut -d "(" -f 2
+d) grep "aligned >1 time" steph_clippedtrimmedbowtie.txt | cut -d "%" -f 1 | cut -d "(" -f 2
+
+4. nano alignedstats_sg.txt
+lane5_sg	2.03	1.11	235455.75	0.92
+cat alignedstats_sg.txt >> /cm/shared/courses/dbarshis/21AdvGenomics/classdata/Astrangia_poculata/alignmentstatstable.txt 
+
+5. [spere004@coreV2-22-028 data]$ pwd 
+/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data
+mkdir testassembly
+a) [spere004@coreV2-22-028 djbtestassembly]$ pwd
+/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq/QCFastqs/djbtestassembly
+mv Trinity.fasta /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/testassembly/
+
+b) /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq
+nano cleanup.sh
+#!/bin/bash -l
+
+#SBATCH -o cleanup.txt
+#SBATCH -n 1
+#SBATCH --mail-user=spere004@odu.edu
+#SBATCH --mail-type=END
+#SBATCH --job-name=cleanup
+
+rm -r /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq/originalfastqs
+rm -r /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq/filteringstats
+rm -r /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq/QCFastqs/trinity_out_dir 
+
+sbatch cleanup.sh
+
+6.  pwd
+/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data
+nano steph_blast.sh
+#!/bin/bash -l
+
+#SBATCH -o blastout.txt
+#SBATCH -n 6
+#SBATCH --mail-user=spere004@odu.edu
+#SBATCH --mail-type=END
+#SBATCH --job-name=steph_blast
+
+enable_lmod
+module load container_env blast
+blastx -query Trinity.fasta -db /cm/shared/apps/blast/databases/uniprot_sprot_Sep2018 -out blastx.outfmt6 -evalue 1e-20 -num_threads 6 -max_target_seqs 1 -outfmt 6
+
+sbatch steph_blast.sh 
+Submitted batch job 9273231
+
+7. [spere004@turing1 QCFastqs]$ pwd
+/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq/QCFastqs
+head -20 RI_B_05_18_clippedtrimmed.fastq.sam
+@HD	VN:1.0	SO:unsorted
+@SQ	SN:TR78|c0_g1_i1_coral	LN:1109
+@SQ	SN:TR78|c0_g2_i1_coral	LN:1109
+@SQ	SN:TR79|c0_g1_i1_coral	LN:610
+@SQ	SN:TR79|c0_g2_i1_coral	LN:1549
+@SQ	SN:TR87|c0_g1_i1_coral	LN:732
+@SQ	SN:TR93|c0_g1_i1_coral	LN:550
+
+8. grep -v '@' RI_B_05_18_clippedtrimmed.fastq.sam | head
+K00188:59:HMTFHBBXX:6:1101:2788:1648	0	TR47986|c1_g3_i2_sym	9	255	51M	*	0	0	CNGGCAGTATGTGCAAAATTTATCTCCTGTTCACCTTTAAGTAACTAACCA	A#<AFF-FJAFAJJJJJJFJJJFJ-FJJJFFJJFJAJJJJJJJJJFJJJJJ	AS:i:-1	XN:i:0	XM:i:1	XO:i:0	XG:i:0	NM:i:1	MD:Z:1G49	YT:Z:UU	RG:Z:RI_B_05_18
+K00188:59:HMTFHBBXX:6:1101:16823:1666	16	TR47986|c1_g3_i2_sym	684	255	51M	*	0	0	TAAT
+
+9. salloc 
+salloc: Pending job allocation 9273245
+salloc: job 9273245 queued and waiting for resources
+salloc: job 9273245 has been allocated resources
+salloc: Granted job allocation 9273245
+
+/cm/shared/courses/dbarshis/21AdvGenomics/scripts/get_explain_sam_flags_advbioinf.py RI_B_05_*.sam
+RI_B_05_18_clippedtrimmed.fastq.sam
+['0', '272', '256', '16']
+0 :
+272 :
+	read reverse strand
+	not primary alignment
+256 :
+	not primary alignment
+16 :
+	read reverse strand
+RI_B_05_22_clippedtrimmed.fastq.sam
+['0', '272', '256', '16']
+0 :
+272 :
+	read reverse strand
+	not primary alignment
+256 :
+	not primary alignment
+16 :
+	read reverse strand
+
+
+10. /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq/QCFastqs
+nano steph_SNPcall.sh
+
+#!/bin/bash -l
+
+#SBATCH -o steph_SNPcall.txt
+#SBATCH -n 1
+#SBATCH --mail-user=spere004@odu.edu
+#SBATCH --mail-type=END
+#SBATCH --job-name=steph_SNPcall
+
+enable_lmod
+module load samtools/1
+for i in *.sam; do `samtools view -bS $i > ${i%.sam}_UNSORTED.bam`; done
+
+for i in *UNSORTED.bam; do samtools sort $i > ${i%_UNSORTED.bam}.bam
+samtools index ${i%_UNSORTED.bam}.bam
+done
+
+sbatch steph_SNPcall.sh 
+Submitted batch job 9273232
+ 
