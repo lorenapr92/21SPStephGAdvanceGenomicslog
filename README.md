@@ -308,8 +308,7 @@ Stats based on ALL transcript contigs:
 	Average contig: 347.72
 	Total assembled bases: 7295061
 2. [spere004@coreV2-22-028 scripts]$ pwd
-/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/scripts
- python avg_cov_len_fasta_advbioinf.py /cm/shared/courses/dbarshis/21AdvGenomics/classdata/Astrangia_poculata/refassembly/15079_Apoc_hostsym.fasta
+/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/scripts/python avg_cov_len_fasta_advbioinf.py /cm/shared/courses/dbarshis/21AdvGenomics/classdata/Astrangia_poculata/refassembly/15079_Apoc_hostsym.fasta
 The total number of sequences is 15079
 The average sequence length is 876
 The total number of bases is 13210470
@@ -439,4 +438,79 @@ done
 
 sbatch steph_SNPcall.sh 
 Submitted batch job 9273232
- 
+
+#Homework07
+
+[spere004@turing1 data]$ pwd
+/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/testassembly/
+1. nano blast parsing.sh
+#!/bin/bash -l
+
+#SBATCH -o blastparseout.txt
+#SBATCH -n 1
+#SBATCH --mail-user=spere004@odu.edu
+#SBATCH --mail-type=END
+#SBATCH --job-name=blastparsing
+
+/cm/shared/apps/trinity/2.0.6/util/analyze_blastPlus_topHit_coverage.pl blastx.outfmt6 Trinity.fasta /cm/shared/apps/blast/databases/uniprot_sprot_Sep2018.fasta
+
+sbatch blastparsing.sh 
+Submitted batch job 9276480
+
+cat blastparseout.txt
+#hit_pct_cov_bin        count_in_bin    >bin_below
+100     143     143
+90      52      195
+80      77      272
+70      87      359
+60      110     469
+50      133     602
+40      219     821
+30      395     1216
+20      726     1942
+10      674     2616
+
+2. [spere004@turing1 QCFastqs]$ pwd
+/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq/QCFastqs
+ls *_UNSORTED.bam
+RI_B_05_18_clippedtrimmed.fastq_UNSORTED.bam  VA_B_05_18_clippedtrimmed.fastq_UNSORTED.bam
+RI_B_05_22_clippedtrimmed.fastq_UNSORTED.bam  VA_B_05_22_clippedtrimmed.fastq_UNSORTED.bam
+RI_B_06_14_clippedtrimmed.fastq_UNSORTED.bam  VA_B_06_14_clippedtrimmed.fastq_UNSORTED.bam
+RI_B_06_22_clippedtrimmed.fastq_UNSORTED.bam  VA_B_06_22_clippedtrimmed.fastq_UNSORTED.bam
+RI_W_05_18_clippedtrimmed.fastq_UNSORTED.bam  VA_W_05_18_clippedtrimmed.fastq_UNSORTED.bam
+RI_W_05_22_clippedtrimmed.fastq_UNSORTED.bam  VA_W_05_22_clippedtrimmed.fastq_UNSORTED.bam
+RI_W_06_14_clippedtrimmed.fastq_UNSORTED.bam  VA_W_06_14_clippedtrimmed.fastq_UNSORTED.bam
+RI_W_06_22_clippedtrimmed.fastq_UNSORTED.bam  VA_W_06_22_clippedtrimmed.fastq_UNSORTED.bam
+nano rmunsorted.sh 
+#!/bin/bash -l
+
+#SBATCH -o rmunsortout.txt
+#SBATCH -n 1
+#SBATCH --mail-user=spere004@odu.edu
+#SBATCH --mail-type=END
+#SBATCH --job-name=rmunsorted
+
+rm *_UNSORTED.bam
+
+sbatch rmunsorted.sh 
+Submitted batch job 9276496
+ls *_UNSORTED.bam
+ls: No match. ##all unsorted bam files are gone.
+rm rmunsorted.txt ##unnecessary txt file to keep
+
+3. /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/fastq/QCFastqs
+nano steph_bayes.sh
+#!/bin/bash -l
+
+#SBATCH -o bayesout.txt
+#SBATCH -n 1         
+#SBATCH --mail-user=spere004@odu.edu
+#SBATCH --mail-type=END
+#SBATCH --job-name=steph_bayes
+
+enable_lmod
+module load dDocent
+freebayes --genotype-qualities -f /cm/shared/courses/dbarshis/21AdvGenomics/classdata/Astrangia_poculata/refassembly/15079_Apoc_hostsym.fasta *.bam > SGmergedfastqs.vcf
+
+sbatch steph_bayes.sh 
+Submitted batch job 9276570
