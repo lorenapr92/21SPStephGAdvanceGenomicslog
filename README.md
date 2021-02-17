@@ -769,3 +769,90 @@ After filtering, kept 5 out of 40 Individuals
 Outputting VCF file...
 After filtering, kept 99853 out of a possible 99853 Sites
 Run Time = 10.00 seconds
+
+#Homework09
+/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/VCF
+salloc
+enable_lmod
+module load dDocent
+#second half run
+/cm/shared/apps/vcftools/0.1.12b/bin/vcftools --vcf mergedfastq_HEAAstrangiaAssembly_subset.vcf --max-missing 0.5 --mac 3 --minQ 30 --minDP 10 --max-alleles 2 --maf 0.015 --remove-indels --recode --recode-INFO-all --out 1578_mergedfastq_HEAAstrangiaAssembly_subset_HEAFilters
+
+VCFtools - v0.1.12b
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf mergedfastq_HEAAstrangiaAssembly_subset.vcf
+	--recode-INFO-all
+	--mac 3
+	--maf 0.015
+	--max-alleles 2
+	--minDP 10
+	--minQ 30
+	--max-missing 0.5
+	--out 1578_mergedfastq_HEAAstrangiaAssembly_subset_HEAFilters
+	--recode
+	--remove-indels
+
+After filtering, kept 40 out of 40 Individuals
+Outputting VCF file...
+After filtering, kept 1578 out of a possible 432676 Sites
+Run Time = 6.00 seconds
+
+2.  grep '#CHROM' mergedfastq_HEAAstrangiaAssembly_subset.vcf > sampleIDs.txt
+sed 's/\s\+/\n/g' sampleIDs.txt > sampleIDs1.txt
+scp spere004@turing.hpc.odu.edu:/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/VCF/sampleIDs1.txt .
+#Added the second column via excel and uploaded the file to the cluster again
+scp sampleIDs1.txt spere004@turing.hpc.odu.edu:/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/VCF/sampleIDs2.txt
+cp sampleIDs2.txt genepop.txt
+
+3. /cm/shared/courses/dbarshis/21AdvGenomics/scripts/vcftogenepop_advbioinf.py 1578_mergedfastq_HEAAstrangiaAssembly_subset_HEAFilters.recode.vcf genepop.txt
+Indivs with genotypes in vcf file: RI_W_06_merged	RI_W_07_merged	VA_B_03_merged	RI_W_02_merged	RI_W_04_merged	VA_W_09_SNP_clipped	RI_B_08_SNP_clipped	VA_W_08_SNP_clipped	VA_B_08_SNP_clipped	VA_W_02_merged	VA_B_07_merged	RI_B_05_merged	VA_W_06_merged	VA_W_04_merged	VA_W_01_merged	VA_B_10_SNP_clipped	VA_B_06_merged	VA_W_05_merged	RI_B_09_SNP_clipped	VA_W_10_SNP_clipped	RI_W_08_SNP_clipped	RI_B_06_merged	RI_W_10_SNP_clipped	RI_B_04_merged	VA_W_03_merged	RI_B_07_merged	RI_W_05_merged	RI_W_09_SNP_clipped	VA_B_01_merged	VA_B_09_SNP_clipped	RI_B_10_SNP_clipped	RI_W_01_merged	RI_B_01_merged	VA_B_04_merged	RI_B_02_merged	RI_W_03_merged	VA_B_02_merged	VA_W_07_merged	VA_B_05_merged	RI_B_03_merged
+44 1578 1578 1578 1578 40
+
+4. scp spere004@turing.hpc.odu.edu:/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/VCF/1578_mergedfastq_HEAAstrangiaAssembly_subset_HEAFilters.recode_genepop.gen .
+
+5. #Working on RStudio. Code below is r commands from day09 R script
+> sum(is.na(datafile$tab))
+[1] 35966
+
+> datafile #shows info
+/// GENIND OBJECT /////////
+
+ // 40 individuals; 1,578 loci; 3,156 alleles; size: 1.4 Mb
+
+ // Basic content
+   @tab:  40 x 3156 matrix of allele counts
+   @loc.n.all: number of alleles per locus (range: 2-2)
+   @loc.fac: locus factor for the 3156 columns of @tab
+   @all.names: list of allele names for each locus
+   @ploidy: ploidy of each individual  (range: 2-2)
+   @type:  codom
+   @call: read.genepop(file = "1578_mergedfastq_HEAAstrangiaAssembly_subset_HEAFilters.recode_genepop.gen", 
+    ncode = 2)
+
+ // Optional content
+   @pop: population of each individual (group size range: 40-40)
+> YOURdata<-scaleGen(datafile, NA.method='mean')
+Warning message:
+In .local(x, ...) : Some scaling values are null.
+ Corresponding alleles are removed.
+> X<-YOURdata
+> Y<-as.factor(substring(pop(datafile),1,4))
+> pca1 <- dudi.pca(X,cent=F, scale=F, scannf=F, nf=3)
+> s.label(pca1$li)
+> s.class(pca1$li, pop(datafile))
+> col <- c("blue","red", "green", "black")
+> s.class(pca1$li, Y,xax=1,yax=2, col=transp(col,.6), axesell=F, cstar=0, cpoint=3, grid=FALSE, addaxes=TRUE)
+> add.scatter.eig(pca1$eig[1:3], 3,1,2, posi="topright")
+> title("PCA of DJB_data\naxes 1-2")
+> a.clust<-snapclust(datafile, k = 2)
+> class(a.clust)
+[1] "snapclust" "list"     
+> names(a.clust)
+[1] "group"     "ll"        "proba"     "converged" "n.iter"    "n.param"  
+> a.tab <- table(pop(datafile), a.clust$group)
+> table.value(a.tab, col.labels = 1:2)
+> compoplot(a.clust)
+
+#plots were created and save on computer
