@@ -856,3 +856,98 @@ In .local(x, ...) : Some scaling values are null.
 > compoplot(a.clust)
 
 #plots were created and save on computer
+
+#Homework10
+
+1. #Following code is R scrip ran on 2 files in day10 folder. Figures are saved on local computer.
+
+library("ape")
+library("pegas")
+library("seqinr")
+library("ggplot2")
+library("adegenet")
+setwd("/Users/stephanieperez/Documents/Data_analysis_class/21sp_advgenomics")
+datafile<-read.genepop("coral_66_cloneremoved_highoutliers.filtered1SNPper_genepop.gen", ncode=2)
+datafile2<-read.genepop("coral_279_cloneremoved_neutral.filtered1SNPper_genepop.gen", ncode=2)
+
+sum(is.na(datafile$tab))
+datafile #shows info
+
+sum(is.na(datafile2$tab))
+datafile2
+
+YOURdata<-scaleGen(datafile, NA.method='mean')
+X<-YOURdata
+Y<-as.factor(substring(pop(datafile),1,4))
+pca1 <- dudi.pca(X,cent=F, scale=F, scannf=F, nf=3)
+
+YOUR2data<-scaleGen(datafile2, NA.method='mean')
+X2<-YOUR2data
+Y2<-as.factor(substring(pop(datafile2),1,4))
+pca12 <- dudi.pca(X2,cent=F, scale=F, scannf=F, nf=3)
+#### PCAs ####
+# individual labels
+s.label(pca1$li)
+s.label(pca12$li)
+# population elipses
+s.class(pca1$li, pop(datafile))
+s.class(pca12$li, pop(datafile2))
+
+#color symbols, pop names
+#pdf("YOURINITIALS_ColorPCA1v2.pdf")
+col <- c("blue","red", "green", "black")
+s.class(pca1$li, Y,xax=1,yax=2, col=transp(col,.6), axesell=F, cstar=0, cpoint=3, grid=FALSE, addaxes=TRUE)
+add.scatter.eig(pca1$eig[1:3], 3,1,2, posi="topright")
+title("PCA of DJB_data\naxes 1-2")
+dev.off()
+
+col <- c("blue","red", "green", "black")
+s.class(pca12$li, Y2,xax=1,yax=2, col=transp(col,.6), axesell=F, cstar=0, cpoint=3, grid=FALSE, addaxes=TRUE)
+add.scatter.eig(pca12$eig[1:3], 3,1,2, posi="topright")
+title("PCA of DJB_data\naxes 1-2")
+dev.off()
+#### Snapclust ####
+a.clust<-snapclust(datafile, k = 2)
+class(a.clust)
+names(a.clust)
+a.tab <- table(pop(datafile), a.clust$group)
+table.value(a.tab, col.labels = 1:2)
+compoplot(a.clust)
+
+a.clust1<-snapclust(datafile2, k = 2)
+class(a.clust1)
+names(a.clust1)
+a.tab <- table(pop(datafile2), a.clust$group)
+table.value(a.tab, col.labels = 1:2)
+compoplot(a.clust1)
+
+2. cd /cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/SAMs
+nano countexpression.sh
+#!/bin/bash -l
+
+#SBATCH -o countexpression.txt
+#SBATCH -n 1         
+#SBATCH --mail-user=spere004@odu.edu
+#SBATCH --mail-type=END
+#SBATCH --job-name=countexpression
+
+/cm/shared/courses/dbarshis/21AdvGenomics/scripts/countxpression_SB_advbioinf.py *.sam
+
+sbatch countexpression.sh
+
+3. salloc
+salloc: Pending job allocation 9280866
+salloc: job 9280866 queued and waiting for resources
+salloc: job 9280866 has been allocated resources
+salloc: Granted job allocation 9280866
+
+mv match_counts.txt countsoutput.txt
+
+/cm/shared/courses/dbarshis/21AdvGenomics/scripts/ParseExpression2BigTable_advbioinf.py /cm/shared/courses/dbarshis/21AdvGenomics/classdata/Astrangia_poculata/host_genelist.txt StephFullCounts_summed.txt NoMatch *_counts.txt
+Hits not matchedmatch_counts.txt=13381	RI_B_05_18_clippedtrimmed.fastq_counts.txt=1698	RI_B_05_22_clippedtrimmed.fastq_counts.txt=1698	RI_B_06_14_clippedtrimmed.fastq_counts.txt=1698	RI_B_06_22_clippedtrimmed.fastq_counts.txt=1698	RI_W_05_18_clippedtrimmed.fastq_counts.txt=1698	RI_W_05_22_clippedtrimmed.fastq_counts.txt=1698	RI_W_06_14_clippedtrimmed.fastq_counts.txt=1698	RI_W_06_22_clippedtrimmed.fastq_counts.txt=1698	VA_B_05_18_clippedtrimmed.fastq_counts.txt=1698	VA_B_05_22_clippedtrimmed.fastq_counts.txt=1698	VA_B_06_14_clippedtrimmed.fastq_counts.txt=1698	VA_B_06_22_clippedtrimmed.fastq_counts.txt=1698	VA_W_05_18_clippedtrimmed.fastq_counts.txt=1698	VA_W_05_22_clippedtrimmed.fastq_counts.txt=1698	VA_W_06_14_clippedtrimmed.fastq_counts.txt=1698	VA_W_06_22_clippedtrimmed.fastq_counts.txt=1698
+
+4. scp spere004@turing.hpc.odu.edu:/cm/shared/courses/dbarshis/21AdvGenomics/sandboxes/StephG/data/SAMs/StephFullCounts_summed.txt .
+spere004@turing.hpc.odu.edu's password: 
+StephFullCounts_summed.txt                                                                100%  860KB   5.2MB/s   00:00
+
+5. sed 's/_clippedtrimmed.fastq_counts.txt_UniqueTotReads//g' StephFullCounts_summed.txt > NewStephfullcount_summed.txt
