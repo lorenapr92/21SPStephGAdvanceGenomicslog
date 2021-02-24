@@ -951,3 +951,341 @@ spere004@turing.hpc.odu.edu's password:
 StephFullCounts_summed.txt                                                                100%  860KB   5.2MB/s   00:00
 
 5. sed 's/_clippedtrimmed.fastq_counts.txt_UniqueTotReads//g' StephFullCounts_summed.txt > NewStephfullcount_summed.txt
+
+
+##HOMEWORKDAY11
+
+> setwd("/Users/stephanieperez/Documents/Data_analysis_class/21sp_advgenomics")
+> getwd()
+[1] "/Users/stephanieperez/Documents/Data_analysis_class/21sp_advgenomics"
+> countsTable <- read.delim('djbFullCounts_summed.txt', header=TRUE, stringsAsFactors=TRUE, row.names=1)
+> head(countsTable)
+                       RI_B_01_14 RI_B_01_18 RI_B_01_22 RI_B_02_14 RI_B_02_18 RI_B_02_22
+TR10054|c0_g1_i1_coral          0          0          0          0          0          0
+TR10054|c0_g2_i1_coral          0          1          6          0          0          0
+TR10083|c0_g2_i1_coral          0          1          2          0          1          2
+TR10090|c0_g1_i1_coral          0          3          1          0          4          0
+TR10090|c0_g2_i1_coral          0          4          2          1          0          0
+TR10103|c0_g1_i1_coral          0          1          4          0          0          4
+                       RI_B_03_14 RI_B_03_18 RI_B_03_22 RI_B_04_14 RI_B_04_18 RI_B_04_22
+> dim(countsTable)
+[1] 13381    84
+> colSums(countsTable)
+RI_B_01_14 RI_B_01_18 RI_B_01_22 RI_B_02_14 RI_B_02_18 RI_B_02_22 RI_B_03_14 RI_B_03_18 
+     97406     207372     173843      47481      58036      84501     170330       5972 
+RI_B_03_22 RI_B_04_14 RI_B_04_18 RI_B_04_22 RI_B_05_14 RI_B_05_18 RI_B_05_22 RI_B_06_14 
+    199204     357124     544267      71600     630609     227313     225639      37012 
+> colSums(countsTable)[order(colSums(countsTable))]
+VA_W_02_22 VA_W_01_22 RI_B_03_18 RI_W_04_22 RI_B_07_22 RI_B_06_14 RI_W_04_14 RI_W_01_14 
+       134        313       5972      10848      25369      37012      37579      39419 
+RI_B_02_14 RI_W_02_14 RI_B_02_18 RI_B_04_22 RI_B_06_22 VA_B_02_14 RI_B_02_22 VA_B_02_22 
+     47481      54184      58036      71600      72254      79276      84501      85224 
+
+> LowCounts<-c("VA_W_02_22","VA_W_01_22","RI_B_03_18")
+> names(countsTable)%in%LowCounts
+ [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+[15] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[29] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[43] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[57] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE  TRUE FALSE
+[71] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+
+> !(names(countsTable)%in%LowCounts)
+ [1]  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+[15]  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+[29]  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+[43]  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+[57]  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE  TRUE  TRUE FALSE  TRUE
+[71]  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+> countsTable<-countsTable[,!(names(countsTable)%in%LowCounts)]
+> dim(countsTable)
+[1] 13381    81
+
+conds<-data.frame("Sample"=names(countsTable))
+> conds$Origin<-factor(substring(conds$Sample,1,2))
+> conds$SymState<-factor(substring(conds$Sample,4,4))
+> conds$Temp<-factor(substring(conds$Sample,9,10))
+> conds$Origin_SymState<-factor(paste(conds$Origin,conds$SymState, sep="_"))
+> conds$Origin_SymState_Temp<-factor(paste(conds$Origin,conds$SymState,conds$Temp, sep="_"))
+> 
+> conds
+       Sample Origin SymState Temp Origin_SymState Origin_SymState_Temp
+1  RI_B_01_14     RI        B   14            RI_B              RI_B_14
+2  RI_B_01_18     RI        B   18            RI_B              RI_B_18
+3  RI_B_01_22     RI        B   22            RI_B              RI_B_22
+4  RI_B_02_14     RI        B   14            RI_B              RI_B_14
+
+> prop.null <- apply(countsTable, 2, function(x) 100*mean(x==0))
+> barplot(prop.null, main="Percentage of null counts per sample", 
++         horiz=TRUE, cex.names=0.5, las=1, 
++         col=conds$Origin_SymState_Temp, ylab='Samples', xlab='% of null counts')
+> pdf(file="OverallNullCounts.pdf",14, 14)
+> barplot(prop.null, main="Percentage of null counts per sample", 
++         horiz=TRUE, cex.names=0.5, las=1, 
++         col=conds$Origin_SymState_Temp, ylab='Samples', xlab='% of null counts')
+> dev.off()
+RStudioGD 
+        2 
+
+> means = apply(countsTable, 1, mean)
+> table(means>=3)
+
+FALSE  TRUE 
+ 5838  7543 
+> countsTable<-countsTable[means>=3,]
+> dim(countsTable)
+[1] 7543   81
+> prop.nullv2 <- apply(countsTable, 2, function(x) 100*mean(x==0))
+> pdf(file="Mean3NullCounts.pdf",14, 14)
+> barplot(prop.nullv2, main="Percentage of null counts per sample", 
++         horiz=TRUE, cex.names=0.5, las=1, 
++         col=conds$Origin_SymState_Temp, ylab='Samples', xlab='% of null counts')
+> dev.off()
+RStudioGD 
+        2 
+
+> dds <- DESeqDataSetFromMatrix(countData=countsTable, colData=conds, design=~ Origin_SymState_Temp)
+> dds <- DESeq(dds)
+estimating size factors
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+-- replacing outliers and refitting for 8 genes
+-- DESeq argument 'minReplicatesForReplace' = 7 
+-- original counts are preserved in counts(dds)
+estimating dispersions
+fitting model and testing
+> vstCounts<-varianceStabilizingTransformation(dds)
+> dists<-dist(t(assay(vstCounts)))
+> plot(hclust(dists))
+plotPCA(vstCounts, intgroup="Origin")
+> plotPCA(vstCounts, intgroup="SymState")
+> plotPCA(vstCounts, intgroup="Temp")
+> plotPCA(vstCounts, intgroup="Origin_SymState")
+> plotPCA(vstCounts, intgroup="Origin_SymState_Temp")
+> resultsNames(dds)
+ [1] "Intercept"                               "Origin_SymState_Temp_RI_B_18_vs_RI_B_14"
+ [3] "Origin_SymState_Temp_RI_B_22_vs_RI_B_14" "Origin_SymState_Temp_RI_W_14_vs_RI_B_14"
+ [5] "Origin_SymState_Temp_RI_W_18_vs_RI_B_14" "Origin_SymState_Temp_RI_W_22_vs_RI_B_14"
+ [7] "Origin_SymState_Temp_VA_B_14_vs_RI_B_14" "Origin_SymState_Temp_VA_B_18_vs_RI_B_14"
+ [9] "Origin_SymState_Temp_VA_B_22_vs_RI_B_14" "Origin_SymState_Temp_VA_W_14_vs_RI_B_14"
+[11] "Origin_SymState_Temp_VA_W_18_vs_RI_B_14" "Origin_SymState_Temp_VA_W_22_vs_RI_B_14"
+> dim(dds)
+[1] 7543   81
+> res <- results(dds, contrast=c("Origin_SymState_Temp", "RI_B_18", "VA_B_18"))
+> head(res)
+log2 fold change (MLE): Origin_SymState_Temp RI_B_18 vs VA_B_18 
+Wald test p-value: Origin_SymState_Temp RI_B_18 vs VA_B_18 
+DataFrame with 6 rows and 6 columns
+                               baseMean     log2FoldChange             lfcSE
+                              <numeric>          <numeric>         <numeric>
+TR10083|c0_g2_i1_coral 5.92149226796624 -0.124351582570554 0.881723031266384
+TR10090|c0_g1_i1_coral   2.414668728522  0.403769276033225 0.959279168358701
+TR10090|c0_g2_i1_coral 3.75861468695046  -0.83542301411573  0.86523878852701
+TR10103|c0_g1_i1_coral 2.98376089398939 -0.801464007457239 0.848307534238223
+TR10108|c0_g1_i1_coral 5.73440284734055 -0.526701449017958 0.837420233249731
+TR10132|c0_g1_i1_coral 8.52629945810969   1.07157187389725  1.16012842796493
+                                     stat            pvalue              padj
+                                <numeric>         <numeric>         <numeric>
+TR10083|c0_g2_i1_coral -0.141032476368405 0.887844286314782 0.996374898818957
+TR10090|c0_g1_i1_coral  0.420909042280218 0.673821502118031 0.990719409569674
+TR10090|c0_g2_i1_coral -0.965540409414564 0.334274206188308 0.964875734525325
+TR10103|c0_g1_i1_coral -0.944780017988347 0.344771195342852 0.967913215005047
+TR10108|c0_g1_i1_coral -0.628957156879308 0.529377105037453 0.987728806338776
+TR10132|c0_g1_i1_coral  0.923666594203699 0.355659929898546 0.967913215005047
+> summary(res)
+
+out of 7542 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 3, 0.04%
+LFC < 0 (down)     : 5, 0.066%
+outliers [1]       : 4, 0.053%
+low counts [2]     : 1, 0.013%
+(mean count < 1)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results
+
+> res <- results(dds, contrast=c("Origin_SymState_Temp", "RI_W_18", "VA_W_18"))
+> summary(res)
+
+out of 7542 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 22, 0.29%
+LFC < 0 (down)     : 38, 0.5%
+outliers [1]       : 4, 0.053%
+low counts [2]     : 3801, 50%
+(mean count < 6)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results
+
+> res <- results(dds, contrast=c("Origin_SymState_Temp", "RI_B_14", "VA_B_14"))
+> summary(res)
+
+out of 7542 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 8, 0.11%
+LFC < 0 (down)     : 4, 0.053%
+outliers [1]       : 4, 0.053%
+low counts [2]     : 1, 0.013%
+(mean count < 1)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results
+> res <- results(dds, contrast=c("Origin_SymState_Temp", "RI_W_14", "VA_W_14"))
+> summary(res)
+
+out of 7542 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 10, 0.13%
+LFC < 0 (down)     : 3, 0.04%
+outliers [1]       : 4, 0.053%
+low counts [2]     : 5263, 70%
+(mean count < 8)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results
+> res <- results(dds, contrast=c("Origin_SymState_Temp", "RI_B_22", "VA_B_22"))
+> summary(res)
+
+out of 7542 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 8, 0.11%
+LFC < 0 (down)     : 2, 0.027%
+outliers [1]       : 4, 0.053%
+low counts [2]     : 1, 0.013%
+(mean count < 1)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results
+
+> res <- results(dds, contrast=c("Origin_SymState_Temp", "RI_W_22", "VA_W_22"))
+> summary(res)
+
+out of 7542 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 11, 0.15%
+LFC < 0 (down)     : 5, 0.066%
+outliers [1]       : 4, 0.053%
+low counts [2]     : 146, 1.9%
+(mean count < 2)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results
+> head(res[order(res$padj),])
+log2 fold change (MLE): Origin_SymState_Temp RI_W_22 vs VA_W_22 
+Wald test p-value: Origin_SymState_Temp RI_W_22 vs VA_W_22 
+DataFrame with 6 rows and 6 columns
+                               baseMean    log2FoldChange             lfcSE
+                              <numeric>         <numeric>         <numeric>
+TR42879|c0_g2_i1_coral  15.410578527665  17.0575331642567  3.13747844493701
+TR13286|c1_g1_i1_coral 32.6102567902141 -3.38044295663573 0.648393226272248
+TR47617|c0_g1_i1_coral  3.7465555529336  19.7261549909787  3.83515887756262
+TR8327|c0_g3_i1_coral  8.73276616692518  19.7338447748926  4.06385316874438
+TR29560|c0_g1_i1_coral 12.7955647888331  2.74246489048391 0.651667601875444
+TR58072|c1_g1_i1_coral 53.8558310969574   1.3803927876847 0.330572470141824
+                                    stat               pvalue                 padj
+                               <numeric>            <numeric>            <numeric>
+TR42879|c0_g2_i1_coral  5.43670130763213 5.42760110313753e-08 0.000401262549554957
+TR13286|c1_g1_i1_coral -5.21356920409335 1.85241378350407e-07 0.000664534402813938
+TR47617|c0_g1_i1_coral  5.14350399050882 2.69660923636117e-07 0.000664534402813938
+TR8327|c0_g3_i1_coral   4.85594433545684  1.1981435873852e-06  0.00221446888538469
+TR29560|c0_g1_i1_coral  4.20837998174426 2.57208081930306e-05   0.0365937404208763
+TR58072|c1_g1_i1_coral  4.17576450662234 2.96986937001566e-05   0.0365937404208763
+> plotCounts(dds, "TR2367|c0_g1_i1_coral", intgroup="Origin_SymState_Temp")
+> plotCounts(dds, "TR2367|c0_g1_i1_coral", intgroup="Origin_SymState_Temp")
+> sum(res$padj < 0.3, na.rm =T)
+[1] 30
+> sum(res$padj < 0.2, na.rm =T)
+[1] 20
+> sum(res$padj < 0.1, na.rm =T)
+[1] 16
+> sum(res$pvalue < 0.05, na.rm =T)
+[1] 343
+> scaledcounts = counts(dds, normalized=T)
+> head(scaledcounts)
+                       RI_B_01_14 RI_B_01_18 RI_B_01_22 RI_B_02_14 RI_B_02_18 RI_B_02_22
+TR10083|c0_g2_i1_coral          0    0.84279   2.292953   0.000000   3.273656   4.312157
+TR10090|c0_g1_i1_coral          0    2.52837   1.146477   0.000000  13.094624   0.000000
+TR10090|c0_g2_i1_coral          0    3.37116   2.292953   3.553607   0.000000   0.000000
+TR10103|c0_g1_i1_coral          0    0.84279   4.585907   0.000000   0.000000   8.624315...
+> genes4heatmap<-res[res$pvalue <0.05 & !is.na(res$pvalue),]
+> names(genes4heatmap)
+[1] "baseMean"       "log2FoldChange" "lfcSE"          "stat"           "pvalue"        
+[6] "padj"          
+> head(genes4heatmap)
+log2 fold change (MLE): Origin_SymState_Temp RI_W_22 vs VA_W_22 
+Wald test p-value: Origin_SymState_Temp RI_W_22 vs VA_W_22 
+DataFrame with 6 rows and 6 columns
+                               baseMean    log2FoldChange             lfcSE
+                              <numeric>         <numeric>         <numeric>
+TR10090|c0_g1_i1_coral   2.414668728522  -2.1602364606262  1.06658202772732
+TR10450|c0_g1_i1_coral 3.06295343830589 -3.43890734797067  1.35815909767837
+TR10768|c0_g1_i1_coral 4.11391026506041  1.64720448435771   0.8163169025316
+TR10773|c0_g1_i1_coral 2.74299826965667  3.89664910540304  1.28628276466641
+TR11771|c0_g1_i1_coral 2.86558169571988  2.26910497576441 0.996533942762988
+TR11938|c0_g1_i2_coral 3.17991201457045  1.92891473796097  0.93224992931647
+                                    stat              pvalue              padj
+                               <numeric>           <numeric>         <numeric>
+TR10090|c0_g1_i1_coral -2.02538239391605   0.042828113882863 0.996984539439689
+TR10450|c0_g1_i1_coral -2.53203571941545   0.011340243841624 0.882509712853964
+TR10768|c0_g1_i1_coral  2.01784929265745  0.0436069594078913 0.996984539439689
+TR10773|c0_g1_i1_coral  3.02938763733929 0.00245050039091153 0.437812432964705
+TR11771|c0_g1_i1_coral  2.27699717831296  0.0227863941200996 0.989064009775494
+TR11938|c0_g1_i2_coral  2.06909614825636  0.0385370651149041 0.996984539439689
+> dim(genes4heatmap)
+[1] 343   6
+> data4heatmap<-scaledcounts[row.names(scaledcounts)%in%row.names(genes4heatmap),]
+> dim(data4heatmap)
+[1] 343  81
+> head(data4heatmap)
+                       RI_B_01_14 RI_B_01_18 RI_B_01_22 RI_B_02_14 RI_B_02_18 RI_B_02_22
+TR10090|c0_g1_i1_coral    0.00000    2.52837   1.146477   0.000000   13.09462   0.000000
+TR10450|c0_g1_i1_coral    0.00000    2.52837   0.000000   0.000000    0.00000   6.468236
+TR10768|c0_g1_i1_coral   10.84813    4.21395   4.585907   7.107215    0.00000   8.624315
+TR10773|c0_g1_i1_coral    0.00000    5.89953   2.292953   3.553607    0.00000   0.000000
+TR11771|c0_g1_i1_coral    0.00000    2.52837   3.439430   0.000000    0.00000   0.000000
+TR11938|c0_g1_i2_coral    0.00000    2.52837   0.000000   0.000000    0.00000   4.312157...
+> temp = as.matrix(rowMeans(data4heatmap))
+> head(temp)
+                           [,1]
+TR10090|c0_g1_i1_coral 2.414669
+TR10450|c0_g1_i1_coral 3.062953
+TR10768|c0_g1_i1_coral 4.113910
+TR10773|c0_g1_i1_coral 2.742998
+TR11771|c0_g1_i1_coral 2.865582
+TR11938|c0_g1_i2_coral 3.179912
+> scaledmatrix<-matrix(data=temp, nrow=nrow(data4heatmap), ncol=ncol(data4heatmap), byrow=FALSE)
+> data4heatmapscaled = data4heatmap/scaledmatrix
+> head(data4heatmapscaled)
+                       RI_B_01_14 RI_B_01_18 RI_B_01_22 RI_B_02_14 RI_B_02_18 RI_B_02_22
+TR10090|c0_g1_i1_coral   0.000000  1.0470877  0.4747967   0.000000   5.422948   0.000000
+TR10450|c0_g1_i1_coral   0.000000  0.8254680  0.0000000   0.000000   0.000000   2.111764
+TR10768|c0_g1_i1_coral   2.636938  1.0243174  1.1147318   1.727606   0.000000   2.096379
+TR10773|c0_g1_i1_coral   0.000000  2.1507597  0.8359295   1.295519   0.000000   0.000000
+TR11771|c0_g1_i1_coral   0.000000  0.8823235  1.2002554   0.000000   0.000000   0.000000
+TR11938|c0_g1_i2_coral   0.000000  0.7951069  0.0000000   0.000000   0.000000   1.356062...
+> dim(data4heatmapscaled)
+[1] 343  81
+
+> pairs.breaks <- seq(0, 3.0, by=0.1)
+> length(pairs.breaks)
+[1] 31
+> mycol <- colorpanel(n=30, low="black", high="yellow")
+> pdf(file="SGdata_byrow.pdf",14,7)
+> heatmap.2(data.matrix(data4heatmapscaled), Rowv=T, Colv=F, dendrogram = c("row"), scale="none", keysize=1, breaks=pairs.breaks, col=mycol, trace = "none", symkey = F, density.info = "density", colsep=c(24), sepcolor=c("white"), sepwidth=c(.1,.1), margins=c(10,10), labRow=F)
+> dev.off()
+RStudioGD 
+        2 
+> pdf(file="SGdata_bycolumn.pdf",14,7)
+> heatmap.2(data.matrix(data4heatmapscaled), Rowv=T, Colv=T, dendrogram = c("col"), scale="none", keysize=1, breaks=pairs.breaks, col=mycol, trace = "none", symkey = F, density.info = "density", colsep=c(24), sepcolor=c("white"), sepwidth=c(.1,.1), margins=c(10,10), labRow=F)
+> dev.off()
+RStudioGD 
+        2 
+> plotPCA(vstCounts[rownames(vstCounts)%in%row.names(genes4heatmap),], intgroup="Origin")
+> prop.nullv3 <- apply(countsTable[rownames(countsTable)%in%row.names(genes4heatmap),], 2, function(x) 100*mean(x==0))
+> pdf(file="ResNullCounts.pdf",14, 14)
+> barplot(prop.nullv3, main="Percentage of null counts per sample", 
++         horiz=TRUE, cex.names=0.5, las=1, 
++         col=conds$Origin_SymState_Temp, ylab='Samples', xlab='% of null counts')
+> dev.off()
+RStudioGD 
+        2 
+
