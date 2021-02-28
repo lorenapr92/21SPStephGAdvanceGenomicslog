@@ -1289,3 +1289,1001 @@ RStudioGD
 RStudioGD 
         2 
 
+#Homeworkday12
+
+_B_03_14 RI_B_05_18 VA_W_07_14 VA_B_06_14 VA_W_07_22 VA_B_07_18 VA_W_02_18 VA_B_03_18 
+    226784     227313     228792     232578     233899     234465     241804     251696 
+RI_B_07_14 VA_W_04_22 VA_B_01_14 VA_B_04_18 VA_B_04_22 VA_B_03_22 VA_W_03_14 VA_W_04_18 
+    257730     261344     261824     264192     268290     271959     278000     280007 
+RI_W_03_14 VA_B_05_18 VA_W_04_14 RI_W_01_18 VA_W_03_22 RI_B_06_18 RI_W_04_18 VA_W_01_18 
+    281297     288121     292041     292612     295382     296071     300578     321900 
+VA_B_05_14 VA_B_01_22 RI_W_07_14 RI_B_04_14 RI_W_03_22 VA_B_06_22 VA_W_05_18 RI_W_05_14 
+    323715     328198     342795     357124     359053     362054     388532     392818 
+RI_W_03_18 RI_B_04_18 VA_B_01_18 RI_B_05_14 
+    428532     544267     548448     630609 
+> 
+> table(substring(names(countsTable),1,2))
+
+RI VA 
+42 42 
+> table(substring(names(countsTable),4,4))
+
+ B  W 
+42 42 
+> table(substring(names(countsTable),9,10))
+
+14 18 22 
+28 28 28 
+> table(paste(substring(names(countsTable),1,2),substring(names(countsTable),4,4), sep="_"))
+
+RI_B RI_W VA_B VA_W 
+  21   21   21   21 
+> table(paste(substring(names(countsTable),1,2),substring(names(countsTable),4,4), substring(names(countsTable),9,10), sep="_"))
+
+RI_B_14 RI_B_18 RI_B_22 RI_W_14 RI_W_18 RI_W_22 VA_B_14 VA_B_18 VA_B_22 VA_W_14 VA_W_18 
+      7       7       7       7       7       7       7       7       7       7       7 
+VA_W_22 
+      7 
+> 
+> LowCounts<-c("VA_W_02_22","VA_W_01_22","RI_B_03_18", "RI_W_01_14", "RI_W_04_22", "VA_W_03_18")
+> names(countsTable)%in%LowCounts
+ [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+[15] FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+[29] FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[43] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[57] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE  TRUE FALSE
+[71]  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+> !(names(countsTable)%in%LowCounts)
+ [1]  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+[15]  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+[29]  TRUE  TRUE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+[43]  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+[57]  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE  TRUE  TRUE FALSE  TRUE
+[71] FALSE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+> countsTable<-countsTable[,!(names(countsTable)%in%LowCounts)]
+> dim(countsTable)
+[1] 13381    78
+> 
+> #make a table with conditions of each individual (e.g. "VA" and "RI")  There should be the same number of conditions described as there are samples in your data file, and in the same order.
+> #NOTE: It is absolutely critical that the columns of the count matrix and the rows of the column data (information about samples) are in the same order. DESeq2 will not make guesses as to which column of the count matrix belongs to which row of the column data, these must be provided to DESeq2 already in consistent order.
+> #Here's an example
+> # Sample		Origin	SymState	Temp  Origin_SymState Origin_SymState_Temp
+> # RI_B_06_18		RI	B	18  RI_B  RI_B_18
+> # VA_B_07_14		VA	B	14  VA_B  VA_B_14
+> # VA_W_07_22		VA	W	22  VA_W  VA_W_22
+> # safest way to do this is in R
+> 
+> conds<-data.frame("Sample"=names(countsTable))
+> conds$Origin<-factor(substring(conds$Sample,1,2))
+> conds$SymState<-factor(substring(conds$Sample,4,4))
+> conds$Temp<-factor(substring(conds$Sample,9,10))
+> conds$Origin_SymState<-factor(paste(conds$Origin,conds$SymState, sep="_"))
+> conds$Origin_SymState_Temp<-factor(paste(conds$Origin,conds$SymState,conds$Temp, sep="_"))
+> 
+> ##Check null counts per sample
+> prop.null <- apply(countsTable, 2, function(x) 100*mean(x==0))
+> 
+> barplot(prop.null, main="Percentage of null counts per sample", 
++         horiz=TRUE, cex.names=0.5, las=1, 
++         col=conds$Origin_SymState_Temp, ylab='Samples', xlab='% of null counts')
+> 
+> pdf(file="OverallNullCountsv2.pdf",14, 14)
+> barplot(prop.null, main="Percentage of null counts per sample", 
++         horiz=TRUE, cex.names=0.5, las=1, 
++         col=conds$Origin_SymState_Temp, ylab='Samples', xlab='% of null counts')
+> dev.off()
+RStudioGD 
+        2 
+> 
+> # how many genes have mean count >=3 
+> means = apply(countsTable, 1, mean)
+> table(means>=3)
+
+FALSE  TRUE 
+ 5721  7660 
+> 
+> countsTable<-countsTable[means>=3,]
+> dim(countsTable)
+[1] 7660   78
+> 
+> prop.nullv2 <- apply(countsTable, 2, function(x) 100*mean(x==0))
+> 
+> barplot(prop.nullv2, main="Percentage of null counts per sample", 
++         horiz=TRUE, cex.names=0.5, las=1, 
++         col=conds$Origin_SymState_Temp, ylab='Samples', xlab='% of null counts')
+> 
+> pdf(file="Mean3NullCountsv2.pdf",14, 14)
+> barplot(prop.nullv2, main="Percentage of null counts per sample", 
++         horiz=TRUE, cex.names=0.5, las=1, 
++         col=conds$Origin_SymState_Temp, ylab='Samples', xlab='% of null counts')
+> dev.off()
+RStudioGD 
+        2 
+> 
+> #make count data sets
+> dds <- DESeqDataSetFromMatrix(countData=countsTable, colData=conds, design=~ Origin + SymState + Temp + Origin:SymState)
+> 
+> dds <- DESeq(dds)
+estimating size factors
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+-- replacing outliers and refitting for 14 genes
+-- DESeq argument 'minReplicatesForReplace' = 7 
+-- original counts are preserved in counts(dds)
+estimating dispersions
+fitting model and testing
+> 
+> dim(dds)
+[1] 7660   78
+> 
+> #transform counts to variance stablized counts
+> vstCounts<-varianceStabilizingTransformation(dds)
+> 
+> #plot cluster dendrogram across samples
+> dists<-dist(t(assay(vstCounts)))
+> plot(hclust(dists))
+> heatmap.2(as.matrix(dists), key=F, trace="none",
++           col=colorpanel(100, "black", "white"),
++           margin=c(10, 10))
+> 
+> ###Figure out which contrast you want to examine (i.e. which two groups do you want to compare)
+> resultsNames(dds)
+[1] "Intercept"          "Origin_VA_vs_RI"    "SymState_W_vs_B"    "Temp_18_vs_14"     
+[5] "Temp_22_vs_14"      "OriginVA.SymStateW"
+> 
+> res <- results(dds)
+> head(res)
+log2 fold change (MLE): OriginVA.SymStateW 
+Wald test p-value: OriginVA.SymStateW 
+DataFrame with 6 rows and 6 columns
+                               baseMean     log2FoldChange             lfcSE
+                              <numeric>          <numeric>         <numeric>
+TR10083|c0_g2_i1_coral   5.366479327573  0.107690151743452  0.64464619766983
+TR10090|c0_g1_i1_coral 2.70436251126018 -0.247209127175208 0.831370968745152
+TR10090|c0_g2_i1_coral 3.65756460141883 -0.976996511249959 0.654110304614643
+TR10103|c0_g1_i1_coral  2.9127886212765 -0.172219518994785 0.641025633753981
+TR10108|c0_g1_i1_coral 6.31144026709945  0.366046450639525 0.664400660631174
+TR10132|c0_g1_i1_coral  9.2673703948612 -0.589356834713084 0.975809166670876
+                                     stat            pvalue              padj
+                                <numeric>         <numeric>         <numeric>
+TR10083|c0_g2_i1_coral   0.16705310933767 0.867328260788591 0.999364127033592
+TR10090|c0_g1_i1_coral -0.297351166289025 0.766198422057453  0.99520853313718
+TR10090|c0_g2_i1_coral  -1.49362654029054  0.13527325854353 0.958806816980756
+TR10103|c0_g1_i1_coral -0.268662452679515 0.788189448150222  0.99520853313718
+TR10108|c0_g1_i1_coral  0.550942333940163 0.581673205867577 0.991106673557066
+TR10132|c0_g1_i1_coral -0.603967307177248 0.545865378089277 0.990476522025752
+> summary(res)
+
+out of 7659 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 2, 0.026%
+LFC < 0 (down)     : 9, 0.12%
+outliers [1]       : 10, 0.13%
+low counts [2]     : 1, 0.013%
+(mean count < 1)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results
+
+> 
+> resSymState <- results(dds, contrast=c("SymState", "B", "W"))
+> head(resSymState)
+log2 fold change (MLE): SymState B vs W 
+Wald test p-value: SymState B vs W 
+DataFrame with 6 rows and 6 columns
+                               baseMean     log2FoldChange             lfcSE
+                              <numeric>          <numeric>         <numeric>
+TR10083|c0_g2_i1_coral   5.366479327573  0.304875236273871 0.463587635582715
+TR10090|c0_g1_i1_coral 2.70436251126018 -0.340213618854429 0.624844624315529
+TR10090|c0_g2_i1_coral 3.65756460141883   -1.0442719434015 0.488672538582417
+TR10103|c0_g1_i1_coral  2.9127886212765 -0.316210568092073 0.469122505416545
+TR10108|c0_g1_i1_coral 6.31144026709945   0.25797411425412 0.481341478797278
+TR10132|c0_g1_i1_coral  9.2673703948612 -0.604956612553455 0.692218264872669
+                                     stat             pvalue              padj
+                                <numeric>          <numeric>         <numeric>
+TR10083|c0_g2_i1_coral  0.657643157136089  0.510767456004599 0.986343106634585
+TR10090|c0_g1_i1_coral -0.544477147782311  0.586113169806799 0.995961170585915
+TR10090|c0_g2_i1_coral  -2.13695647074996 0.0326015322469065 0.816269739453607
+TR10103|c0_g1_i1_coral -0.674046894875149  0.500281500123105 0.986343106634585
+TR10108|c0_g1_i1_coral  0.535948231385995   0.59199432935739 0.995961170585915
+TR10132|c0_g1_i1_coral -0.873939107435622  0.382151415850855 0.986343106634585
+> summary(resSymState)
+
+out of 7659 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 6, 0.078%
+LFC < 0 (down)     : 6, 0.078%
+outliers [1]       : 10, 0.13%
+low counts [2]     : 1, 0.013%
+(mean count < 1)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results
+
+> 
+> resOrigin <- results(dds, contrast=c("Origin", "VA", "RI"))
+> head(resOrigin)
+log2 fold change (MLE): Origin VA vs RI 
+Wald test p-value: Origin VA vs RI 
+DataFrame with 6 rows and 6 columns
+                               baseMean      log2FoldChange             lfcSE
+                              <numeric>           <numeric>         <numeric>
+TR10083|c0_g2_i1_coral   5.366479327573  -0.271242746289843 0.446224512750353
+TR10090|c0_g1_i1_coral 2.70436251126018    1.11251170496561 0.589306266446119
+TR10090|c0_g2_i1_coral 3.65756460141883   0.943134641716211 0.474719393211504
+TR10103|c0_g1_i1_coral  2.9127886212765  0.0386642676540012 0.456719612483097
+TR10108|c0_g1_i1_coral 6.31144026709945 -0.0179009694277555 0.461957599914831
+TR10132|c0_g1_i1_coral  9.2673703948612  -0.264990306479184 0.677607561801266
+                                      stat             pvalue              padj
+                                 <numeric>          <numeric>         <numeric>
+TR10083|c0_g2_i1_coral  -0.607861600022842  0.543279269700006 0.865660813784253
+TR10090|c0_g1_i1_coral    1.88783281005095 0.0590483989759312                NA
+TR10090|c0_g2_i1_coral    1.98672027139201 0.0469534041233123 0.418043000342497
+TR10103|c0_g1_i1_coral  0.0846564644854882  0.932534507970102 0.984590265229257
+TR10108|c0_g1_i1_coral -0.0387502433795997  0.969089515041603 0.992149683420423
+TR10132|c0_g1_i1_coral  -0.391067516682912  0.695747330435347 0.921516804624192
+> summary(resOrigin)
+
+out of 7659 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 73, 0.95%
+LFC < 0 (down)     : 104, 1.4%
+outliers [1]       : 10, 0.13%
+low counts [2]     : 594, 7.8%
+(mean count < 3)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results
+
+> 
+> res14v18 <- results(dds, contrast=c("Temp", "14", "18"))
+> head(res14v18)
+log2 fold change (MLE): Temp 14 vs 18 
+Wald test p-value: Temp 14 vs 18 
+DataFrame with 6 rows and 6 columns
+                               baseMean     log2FoldChange             lfcSE
+                              <numeric>          <numeric>         <numeric>
+TR10083|c0_g2_i1_coral   5.366479327573 0.0134105654377919 0.389675116366814
+TR10090|c0_g1_i1_coral 2.70436251126018 -0.750040304511369 0.493719609600886
+TR10090|c0_g2_i1_coral 3.65756460141883 -0.527849679316855 0.385227211070661
+TR10103|c0_g1_i1_coral  2.9127886212765  0.144899722334601 0.377623543666657
+TR10108|c0_g1_i1_coral 6.31144026709945 -0.117131615020316 0.401865058532759
+TR10132|c0_g1_i1_coral  9.2673703948612  -1.16667257299433 0.592603491023266
+                                     stat             pvalue              padj
+                                <numeric>          <numeric>         <numeric>
+TR10083|c0_g2_i1_coral 0.0344147339014795  0.972546434477265 0.994762640063651
+TR10090|c0_g1_i1_coral  -1.51916247587915   0.12872160398251                NA
+TR10090|c0_g2_i1_coral  -1.37022947535249   0.17061528001709                NA
+TR10103|c0_g1_i1_coral  0.383714746510905  0.701189881652785                NA
+TR10108|c0_g1_i1_coral -0.291470015950062  0.770691872645245 0.956296438232868
+TR10132|c0_g1_i1_coral  -1.96872375992892 0.0489848213296003 0.440134464115494
+> summary(res14v18)
+
+out of 7659 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 31, 0.4%
+LFC < 0 (down)     : 111, 1.4%
+outliers [1]       : 10, 0.13%
+low counts [2]     : 2671, 35%
+(mean count < 4)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results
+
+> 
+> res14v22 <- results(dds, contrast=c("Temp", "14", "22"))
+> head(res14v22)
+log2 fold change (MLE): Temp 14 vs 22 
+Wald test p-value: Temp 14 vs 22 
+DataFrame with 6 rows and 6 columns
+                               baseMean     log2FoldChange             lfcSE
+                              <numeric>          <numeric>         <numeric>
+TR10083|c0_g2_i1_coral   5.366479327573 -0.381080048190283 0.396906053114453
+TR10090|c0_g1_i1_coral 2.70436251126018 -0.420390942831918 0.517099767325245
+TR10090|c0_g2_i1_coral 3.65756460141883 -0.149468056890158 0.407435526480227
+TR10103|c0_g1_i1_coral  2.9127886212765  0.327505589102544 0.400037906787554
+TR10108|c0_g1_i1_coral 6.31144026709945 -0.504680765262664 0.409220095704197
+TR10132|c0_g1_i1_coral  9.2673703948612   -1.2400583742243 0.602190057747409
+                                     stat             pvalue              padj
+                                <numeric>          <numeric>         <numeric>
+TR10083|c0_g2_i1_coral  -0.96012657201878  0.336991516539358  0.79600966973284
+TR10090|c0_g1_i1_coral -0.812978402613553  0.416230440926914                NA
+TR10090|c0_g2_i1_coral -0.366850819763779  0.713730297691035                NA
+TR10103|c0_g1_i1_coral  0.818686388328871  0.412965364593821                NA
+TR10108|c0_g1_i1_coral  -1.23327463768414  0.217473316972006 0.699820201183028
+TR10132|c0_g1_i1_coral  -2.05924750545192 0.0394705344365933 0.387444149379081
+> summary(res14v22)
+
+out of 7659 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 64, 0.84%
+LFC < 0 (down)     : 97, 1.3%
+outliers [1]       : 10, 0.13%
+low counts [2]     : 2226, 29%
+(mean count < 4)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results
+
+> 
+> res18v22 <- results(dds, contrast=c("Temp", "18", "22"))
+> head(res18v22)
+log2 fold change (MLE): Temp 18 vs 22 
+Wald test p-value: Temp 18 vs 22 
+DataFrame with 6 rows and 6 columns
+                               baseMean      log2FoldChange             lfcSE
+                              <numeric>           <numeric>         <numeric>
+TR10083|c0_g2_i1_coral   5.366479327573  -0.394490613628075 0.395010013602601
+TR10090|c0_g1_i1_coral 2.70436251126018   0.329649361679451 0.503429809209276
+TR10090|c0_g2_i1_coral 3.65756460141883   0.378381622426696 0.396934638805837
+TR10103|c0_g1_i1_coral  2.9127886212765   0.182605866767943 0.399213811730964
+TR10108|c0_g1_i1_coral 6.31144026709945  -0.387549150242348 0.406735578634103
+TR10132|c0_g1_i1_coral  9.2673703948612 -0.0733858012299701 0.596241474936225
+                                     stat            pvalue              padj
+                                <numeric>         <numeric>         <numeric>
+TR10083|c0_g2_i1_coral -0.998685096689603 0.317947262436469 0.838585264651832
+TR10090|c0_g1_i1_coral  0.654806997220173 0.512592024969438                NA
+TR10090|c0_g2_i1_coral  0.953259265971454 0.340458724704261 0.847758501629442
+TR10103|c0_g1_i1_coral  0.457413700132709  0.64737371896663                NA
+TR10108|c0_g1_i1_coral -0.952828251572713 0.340677097558174 0.847758501629442
+TR10132|c0_g1_i1_coral -0.123080671699029 0.902043216645959 0.991572144643207
+> summary(res18v22)
+
+out of 7659 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 34, 0.44%
+LFC < 0 (down)     : 10, 0.13%
+outliers [1]       : 10, 0.13%
+low counts [2]     : 1337, 17%
+(mean count < 3)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results
+
+> sum(resOrigin$padj < 0.1, na.rm =T)
+[1] 177
+> sum(resOrigin$pvalue < 0.05, na.rm =T)
+[1] 866
+> scaledcounts = counts(dds, normalize=T)
+> head(scaledcounts)
+                       RI_B_01_14 RI_B_01_18 RI_B_01_22 RI_B_02_14 RI_B_02_18 RI_B_02_22
+TR10083|c0_g2_i1_coral          0  0.8671827   2.447866   0.000000   3.455170   4.432653
+TR10090|c0_g1_i1_coral          0  2.6015481   1.223933   0.000000  13.820681   0.000000
+TR10090|c0_g2_i1_coral          0  3.4687308   2.447866   3.772786   0.000000   0.000000
+TR10103|c0_g1_i1_coral          0  0.8671827   4.895733   0.000000   0.000000   8.865306
+TR10108|c0_g1_i1_coral          0  1.7343654   4.895733   0.000000   6.910341   0.000000
+TR10132|c0_g1_i1_coral          0  6.0702789   1.223933  18.863931  51.827555   0.000000
+                       RI_B_03_14 RI_B_03_22 RI_B_04_14 RI_B_04_18 RI_B_04_22 RI_B_05_14
+TR10083|c0_g2_i1_coral  12.871970   1.272998  12.424473  8.1878079   0.000000   4.563408
+TR10090|c0_g1_i1_coral   0.000000   0.000000   2.003947  4.0939039   6.765958   0.570426
+TR10090|c0_g2_i1_coral   0.000000   3.818995   4.809473  3.6845136   0.000000   0.570426
+TR10103|c0_g1_i1_coral   1.287197   3.818995   6.011842  3.2751232   0.000000   5.133834
+TR10108|c0_g1_i1_coral  14.159167  15.275980   2.805526  4.9126847  16.914895   5.989473
+TR10132|c0_g1_i1_coral   6.435985   2.545997   0.000000  0.8187808   3.382979   1.426065
+                       RI_B_05_18 RI_B_05_22 RI_B_06_14 RI_B_06_18 RI_B_06_22 RI_B_07_14
+TR10083|c0_g2_i1_coral          0  2.4538305   19.55961   3.448566   18.78455  1.4936671
+TR10090|c0_g1_i1_coral          0  0.0000000    0.00000   2.069140    0.00000  0.7468335
+TR10090|c0_g2_i1_coral          0  2.4538305    0.00000   4.827992    0.00000  3.7341677
+TR10103|c0_g1_i1_coral          0  4.0897176    0.00000   3.448566    0.00000  2.2405006
+TR10108|c0_g1_i1_coral          0  0.8179435    6.51987  10.345698   40.69986  3.7341677
+TR10132|c0_g1_i1_coral          0  1.6358870    0.00000   1.379426    0.00000  8.9620025
+                       RI_B_07_18 RI_B_07_22 RI_W_01_18 RI_W_01_22 RI_W_02_14 RI_W_02_18
+TR10083|c0_g2_i1_coral   8.070182   36.85316  10.815190   4.646396   0.000000  4.9947759
+TR10090|c0_g1_i1_coral   2.017545    0.00000  12.257216   1.548799   0.000000  1.9979104
+TR10090|c0_g2_i1_coral   1.008773    0.00000  12.257216   7.743994   4.651361  4.9947759
+TR10103|c0_g1_i1_coral   2.017545    0.00000   7.931140   0.000000   0.000000  0.9989552
+TR10108|c0_g1_i1_coral   1.008773    0.00000   2.884051   1.548799   9.302721  6.9926863
+TR10132|c0_g1_i1_coral  44.386000   27.63987   1.442025   0.000000   0.000000  5.9937311
+                       RI_W_02_22 RI_W_03_14 RI_W_03_18 RI_W_03_22 RI_W_04_14 RI_W_04_18
+TR10083|c0_g2_i1_coral   3.615216   8.525621   5.407467   4.745758   12.82564  2.9768406
+TR10090|c0_g1_i1_coral   0.000000   4.262810   1.081493   1.581919    0.00000  3.4729807
+TR10090|c0_g2_i1_coral   4.820288   3.044865   3.244480   1.581919    0.00000  7.4421015
+TR10103|c0_g1_i1_coral   3.615216   3.044865   3.244480   1.054613    0.00000  0.9922802
+TR10108|c0_g1_i1_coral   2.410144   2.435892   4.686471   2.109226   21.37607 12.8996426
+TR10132|c0_g1_i1_coral  44.587667   1.217946   1.081493   1.054613   29.92650  7.9382416
+                       RI_W_05_14 RI_W_05_18 RI_W_05_22 RI_W_06_14 RI_W_06_18 RI_W_06_22
+TR10083|c0_g2_i1_coral  3.1630643   1.010704   5.526636   1.044347   1.336966   5.564881
+TR10090|c0_g1_i1_coral  0.9037326   8.085630   0.000000   0.000000   0.000000   4.451904
+TR10090|c0_g2_i1_coral  3.6149306  10.107037   1.381659   3.133041   1.336966   7.790833
+TR10103|c0_g1_i1_coral  4.0667969   2.021407   2.763318  10.443469   1.336966   2.225952
+TR10108|c0_g1_i1_coral  5.4223959   2.021407   6.908296  11.487816   0.000000   5.564881
+TR10132|c0_g1_i1_coral  1.8074653  10.107037  27.633182   5.221735   1.336966  42.293092
+                       RI_W_07_14 RI_W_07_18 RI_W_07_22 VA_B_01_14 VA_B_01_18 VA_B_01_22
+TR10083|c0_g2_i1_coral   4.124636   5.593017   6.900578   2.551157   1.731769   2.845097
+TR10090|c0_g1_i1_coral   0.000000   0.000000   0.000000   7.653472   9.091789   1.707058
+TR10090|c0_g2_i1_coral   2.062318   1.118603   5.520462  10.204629   5.628251   5.690194
+TR10103|c0_g1_i1_coral   5.499514  13.423242   1.380116   3.826736   2.597654   2.845097
+TR10108|c0_g1_i1_coral   0.000000   1.118603   5.520462   3.826736   9.091789   2.845097
+TR10132|c0_g1_i1_coral   1.374879   2.237207  86.947282   1.275579   1.298827   0.000000
+                       VA_B_02_14 VA_B_02_18 VA_B_02_22 VA_B_03_14 VA_B_03_18 VA_B_03_22
+TR10083|c0_g2_i1_coral          0    14.2516  19.312637  16.029307  14.339493   7.833217
+TR10090|c0_g1_i1_coral          0     0.0000   0.000000   5.828839   2.150924   7.833217
+TR10090|c0_g2_i1_coral          0     0.0000   0.000000  10.929073   4.301848   3.560553
+TR10103|c0_g1_i1_coral          0     0.0000   2.145849   2.185815   4.301848   3.560553
+TR10108|c0_g1_i1_coral          0     0.0000   0.000000  14.572098  18.641340  21.363318
+TR10132|c0_g1_i1_coral          0     0.0000   8.583394   9.471863  30.829909   8.545327
+                       VA_B_04_14 VA_B_04_18 VA_B_04_22 VA_B_05_14 VA_B_05_18 VA_B_05_22
+TR10083|c0_g2_i1_coral   0.000000  0.9006809   6.731616   2.098865  3.3173156   1.813677
+TR10090|c0_g1_i1_coral   0.000000  4.5034046   3.624716   4.897352  1.1057719   7.254707
+TR10090|c0_g2_i1_coral   7.108517  3.1523832   0.000000   1.399244  0.5528859   5.441030
+TR10103|c0_g1_i1_coral   4.442823  0.0000000   0.000000   0.000000  3.3173156   0.000000
+TR10108|c0_g1_i1_coral   2.665694  4.9537450   3.624716   9.095083  5.5288593   0.000000
+TR10132|c0_g1_i1_coral   0.000000  2.7020428   0.000000   0.000000  4.9759734   5.441030
+                       VA_B_06_14 VA_B_06_18 VA_B_06_22 VA_B_07_14 VA_B_07_18 VA_B_07_22
+TR10083|c0_g2_i1_coral   1.383946   0.000000  5.9098781   3.728534  0.7405861   2.098499
+TR10090|c0_g1_i1_coral   8.303676   0.000000  0.4924898   0.000000  3.7029304   2.098499
+TR10090|c0_g2_i1_coral   0.000000   4.206352  1.4774695   1.491414 15.5523076   6.295498
+TR10103|c0_g1_i1_coral   5.535784   6.730163  3.9399187   1.491414  8.1464468   4.196999
+TR10108|c0_g1_i1_coral  11.763540   4.206352  3.4474289   2.237121  2.2217582   5.246248
+TR10132|c0_g1_i1_coral  18.683270   2.523811 14.2822054   8.948482 17.0334798   2.098499
+                       VA_W_01_14 VA_W_01_18 VA_W_02_14 VA_W_02_18 VA_W_03_14 VA_W_03_22
+TR10083|c0_g2_i1_coral   6.699293   7.732656   0.000000  4.5789684  3.1096023   6.888125
+TR10090|c0_g1_i1_coral   3.828167   1.104665   6.978382  0.6541383  5.4418040   9.392897
+TR10090|c0_g2_i1_coral   0.000000   3.866328   4.361489 13.0827667  6.9966052   3.130966
+TR10103|c0_g1_i1_coral   0.000000   3.866328   5.233787  0.6541383  6.9966052   2.504773
+TR10108|c0_g1_i1_coral   1.914084   4.418660   0.000000  9.1579367  3.1096023   3.757159
+TR10132|c0_g1_i1_coral   0.000000  10.494319   2.616893 13.0827667  0.7774006  13.150056
+                       VA_W_04_14 VA_W_04_18 VA_W_04_22 VA_W_05_14 VA_W_05_18 VA_W_05_22
+TR10083|c0_g2_i1_coral   1.026752   4.334366   6.410680  0.0000000   3.848517  12.379823
+TR10090|c0_g1_i1_coral   2.566880   5.779155   3.945034  0.0000000   1.099576  12.379823
+TR10090|c0_g2_i1_coral   2.053504   7.705540  10.848842  0.0000000   2.748941   7.427894
+TR10103|c0_g1_i1_coral   3.593631   3.852770   2.958775  0.8118702   3.298729   2.475965
+TR10108|c0_g1_i1_coral   6.673887  20.227043   8.383196  1.6237403   5.497882  38.377452
+TR10132|c0_g1_i1_coral   2.566880   0.000000   0.000000  2.4356105   8.796611   2.475965
+                       VA_W_06_14 VA_W_06_18 VA_W_06_22 VA_W_07_14 VA_W_07_18 VA_W_07_22
+TR10083|c0_g2_i1_coral   5.042735  2.5895188   0.000000 10.2466895   1.127608  0.9473408
+TR10090|c0_g1_i1_coral   0.000000  0.8631729   1.764014  1.5764138   1.127608  6.6313859
+TR10090|c0_g2_i1_coral   3.025641  0.8631729   0.000000  5.5174482   3.382824  2.8420225
+TR10103|c0_g1_i1_coral   8.068376  2.5895188   4.410036  4.7292413   0.000000  1.8946817
+TR10108|c0_g1_i1_coral   4.034188  6.9053834   5.292043  3.1528275   1.127608  1.8946817
+TR10132|c0_g1_i1_coral   9.076923 29.3478796  26.460214  0.7882069   6.765648  8.5260676
+> head(scaledcounts)
+                       RI_B_01_14 RI_B_01_18 RI_B_01_22 RI_B_02_14 RI_B_02_18 RI_B_02_22
+TR10083|c0_g2_i1_coral          0  0.8671827   2.447866   0.000000   3.455170   4.432653
+TR10090|c0_g1_i1_coral          0  2.6015481   1.223933   0.000000  13.820681   0.000000
+TR10090|c0_g2_i1_coral          0  3.4687308   2.447866   3.772786   0.000000   0.000000
+TR10103|c0_g1_i1_coral          0  0.8671827   4.895733   0.000000   0.000000   8.865306
+TR10108|c0_g1_i1_coral          0  1.7343654   4.895733   0.000000   6.910341   0.000000
+TR10132|c0_g1_i1_coral          0  6.0702789   1.223933  18.863931  51.827555   0.000000
+                       RI_B_03_14 RI_B_03_22 RI_B_04_14 RI_B_04_18 RI_B_04_22 RI_B_05_14
+TR10083|c0_g2_i1_coral  12.871970   1.272998  12.424473  8.1878079   0.000000   4.563408
+TR10090|c0_g1_i1_coral   0.000000   0.000000   2.003947  4.0939039   6.765958   0.570426
+TR10090|c0_g2_i1_coral   0.000000   3.818995   4.809473  3.6845136   0.000000   0.570426
+TR10103|c0_g1_i1_coral   1.287197   3.818995   6.011842  3.2751232   0.000000   5.133834
+TR10108|c0_g1_i1_coral  14.159167  15.275980   2.805526  4.9126847  16.914895   5.989473
+TR10132|c0_g1_i1_coral   6.435985   2.545997   0.000000  0.8187808   3.382979   1.426065
+                       RI_B_05_18 RI_B_05_22 RI_B_06_14 RI_B_06_18 RI_B_06_22 RI_B_07_14
+TR10083|c0_g2_i1_coral          0  2.4538305   19.55961   3.448566   18.78455  1.4936671
+TR10090|c0_g1_i1_coral          0  0.0000000    0.00000   2.069140    0.00000  0.7468335
+TR10090|c0_g2_i1_coral          0  2.4538305    0.00000   4.827992    0.00000  3.7341677
+TR10103|c0_g1_i1_coral          0  4.0897176    0.00000   3.448566    0.00000  2.2405006
+TR10108|c0_g1_i1_coral          0  0.8179435    6.51987  10.345698   40.69986  3.7341677
+TR10132|c0_g1_i1_coral          0  1.6358870    0.00000   1.379426    0.00000  8.9620025
+                       RI_B_07_18 RI_B_07_22 RI_W_01_18 RI_W_01_22 RI_W_02_14 RI_W_02_18
+TR10083|c0_g2_i1_coral   8.070182   36.85316  10.815190   4.646396   0.000000  4.9947759
+TR10090|c0_g1_i1_coral   2.017545    0.00000  12.257216   1.548799   0.000000  1.9979104
+TR10090|c0_g2_i1_coral   1.008773    0.00000  12.257216   7.743994   4.651361  4.9947759
+TR10103|c0_g1_i1_coral   2.017545    0.00000   7.931140   0.000000   0.000000  0.9989552
+TR10108|c0_g1_i1_coral   1.008773    0.00000   2.884051   1.548799   9.302721  6.9926863
+TR10132|c0_g1_i1_coral  44.386000   27.63987   1.442025   0.000000   0.000000  5.9937311
+                       RI_W_02_22 RI_W_03_14 RI_W_03_18 RI_W_03_22 RI_W_04_14 RI_W_04_18
+TR10083|c0_g2_i1_coral   3.615216   8.525621   5.407467   4.745758   12.82564  2.9768406
+TR10090|c0_g1_i1_coral   0.000000   4.262810   1.081493   1.581919    0.00000  3.4729807
+TR10090|c0_g2_i1_coral   4.820288   3.044865   3.244480   1.581919    0.00000  7.4421015
+TR10103|c0_g1_i1_coral   3.615216   3.044865   3.244480   1.054613    0.00000  0.9922802
+TR10108|c0_g1_i1_coral   2.410144   2.435892   4.686471   2.109226   21.37607 12.8996426
+TR10132|c0_g1_i1_coral  44.587667   1.217946   1.081493   1.054613   29.92650  7.9382416
+                       RI_W_05_14 RI_W_05_18 RI_W_05_22 RI_W_06_14 RI_W_06_18 RI_W_06_22
+TR10083|c0_g2_i1_coral  3.1630643   1.010704   5.526636   1.044347   1.336966   5.564881
+TR10090|c0_g1_i1_coral  0.9037326   8.085630   0.000000   0.000000   0.000000   4.451904
+TR10090|c0_g2_i1_coral  3.6149306  10.107037   1.381659   3.133041   1.336966   7.790833
+TR10103|c0_g1_i1_coral  4.0667969   2.021407   2.763318  10.443469   1.336966   2.225952
+TR10108|c0_g1_i1_coral  5.4223959   2.021407   6.908296  11.487816   0.000000   5.564881
+TR10132|c0_g1_i1_coral  1.8074653  10.107037  27.633182   5.221735   1.336966  42.293092
+                       RI_W_07_14 RI_W_07_18 RI_W_07_22 VA_B_01_14 VA_B_01_18 VA_B_01_22
+TR10083|c0_g2_i1_coral   4.124636   5.593017   6.900578   2.551157   1.731769   2.845097
+TR10090|c0_g1_i1_coral   0.000000   0.000000   0.000000   7.653472   9.091789   1.707058
+TR10090|c0_g2_i1_coral   2.062318   1.118603   5.520462  10.204629   5.628251   5.690194
+TR10103|c0_g1_i1_coral   5.499514  13.423242   1.380116   3.826736   2.597654   2.845097
+TR10108|c0_g1_i1_coral   0.000000   1.118603   5.520462   3.826736   9.091789   2.845097
+TR10132|c0_g1_i1_coral   1.374879   2.237207  86.947282   1.275579   1.298827   0.000000
+                       VA_B_02_14 VA_B_02_18 VA_B_02_22 VA_B_03_14 VA_B_03_18 VA_B_03_22
+TR10083|c0_g2_i1_coral          0    14.2516  19.312637  16.029307  14.339493   7.833217
+TR10090|c0_g1_i1_coral          0     0.0000   0.000000   5.828839   2.150924   7.833217
+TR10090|c0_g2_i1_coral          0     0.0000   0.000000  10.929073   4.301848   3.560553
+TR10103|c0_g1_i1_coral          0     0.0000   2.145849   2.185815   4.301848   3.560553
+TR10108|c0_g1_i1_coral          0     0.0000   0.000000  14.572098  18.641340  21.363318
+TR10132|c0_g1_i1_coral          0     0.0000   8.583394   9.471863  30.829909   8.545327
+                       VA_B_04_14 VA_B_04_18 VA_B_04_22 VA_B_05_14 VA_B_05_18 VA_B_05_22
+TR10083|c0_g2_i1_coral   0.000000  0.9006809   6.731616   2.098865  3.3173156   1.813677
+TR10090|c0_g1_i1_coral   0.000000  4.5034046   3.624716   4.897352  1.1057719   7.254707
+TR10090|c0_g2_i1_coral   7.108517  3.1523832   0.000000   1.399244  0.5528859   5.441030
+TR10103|c0_g1_i1_coral   4.442823  0.0000000   0.000000   0.000000  3.3173156   0.000000
+TR10108|c0_g1_i1_coral   2.665694  4.9537450   3.624716   9.095083  5.5288593   0.000000
+TR10132|c0_g1_i1_coral   0.000000  2.7020428   0.000000   0.000000  4.9759734   5.441030
+                       VA_B_06_14 VA_B_06_18 VA_B_06_22 VA_B_07_14 VA_B_07_18 VA_B_07_22
+TR10083|c0_g2_i1_coral   1.383946   0.000000  5.9098781   3.728534  0.7405861   2.098499
+TR10090|c0_g1_i1_coral   8.303676   0.000000  0.4924898   0.000000  3.7029304   2.098499
+TR10090|c0_g2_i1_coral   0.000000   4.206352  1.4774695   1.491414 15.5523076   6.295498
+TR10103|c0_g1_i1_coral   5.535784   6.730163  3.9399187   1.491414  8.1464468   4.196999
+TR10108|c0_g1_i1_coral  11.763540   4.206352  3.4474289   2.237121  2.2217582   5.246248
+TR10132|c0_g1_i1_coral  18.683270   2.523811 14.2822054   8.948482 17.0334798   2.098499
+                       VA_W_01_14 VA_W_01_18 VA_W_02_14 VA_W_02_18 VA_W_03_14 VA_W_03_22
+TR10083|c0_g2_i1_coral   6.699293   7.732656   0.000000  4.5789684  3.1096023   6.888125
+TR10090|c0_g1_i1_coral   3.828167   1.104665   6.978382  0.6541383  5.4418040   9.392897
+TR10090|c0_g2_i1_coral   0.000000   3.866328   4.361489 13.0827667  6.9966052   3.130966
+TR10103|c0_g1_i1_coral   0.000000   3.866328   5.233787  0.6541383  6.9966052   2.504773
+TR10108|c0_g1_i1_coral   1.914084   4.418660   0.000000  9.1579367  3.1096023   3.757159
+TR10132|c0_g1_i1_coral   0.000000  10.494319   2.616893 13.0827667  0.7774006  13.150056
+                       VA_W_04_14 VA_W_04_18 VA_W_04_22 VA_W_05_14 VA_W_05_18 VA_W_05_22
+TR10083|c0_g2_i1_coral   1.026752   4.334366   6.410680  0.0000000   3.848517  12.379823
+TR10090|c0_g1_i1_coral   2.566880   5.779155   3.945034  0.0000000   1.099576  12.379823
+TR10090|c0_g2_i1_coral   2.053504   7.705540  10.848842  0.0000000   2.748941   7.427894
+TR10103|c0_g1_i1_coral   3.593631   3.852770   2.958775  0.8118702   3.298729   2.475965
+TR10108|c0_g1_i1_coral   6.673887  20.227043   8.383196  1.6237403   5.497882  38.377452
+TR10132|c0_g1_i1_coral   2.566880   0.000000   0.000000  2.4356105   8.796611   2.475965
+                       VA_W_06_14 VA_W_06_18 VA_W_06_22 VA_W_07_14 VA_W_07_18 VA_W_07_22
+TR10083|c0_g2_i1_coral   5.042735  2.5895188   0.000000 10.2466895   1.127608  0.9473408
+TR10090|c0_g1_i1_coral   0.000000  0.8631729   1.764014  1.5764138   1.127608  6.6313859
+TR10090|c0_g2_i1_coral   3.025641  0.8631729   0.000000  5.5174482   3.382824  2.8420225
+TR10103|c0_g1_i1_coral   8.068376  2.5895188   4.410036  4.7292413   0.000000  1.8946817
+TR10108|c0_g1_i1_coral   4.034188  6.9053834   5.292043  3.1528275   1.127608  1.8946817
+TR10132|c0_g1_i1_coral   9.076923 29.3478796  26.460214  0.7882069   6.765648  8.5260676
+> genes4heatmap<-resOrigin[resOrigin$pvalue <0.05 & !is.na(resOrigin$pvalue),]
+> names(genes4heatmap)
+[1] "baseMean"       "log2FoldChange" "lfcSE"          "stat"           "pvalue"        
+[6] "padj"          
+> head(genes4heatmap)
+log2 fold change (MLE): Origin VA vs RI 
+Wald test p-value: Origin VA vs RI 
+DataFrame with 6 rows and 6 columns
+                               baseMean    log2FoldChange             lfcSE
+                              <numeric>         <numeric>         <numeric>
+TR10090|c0_g2_i1_coral 3.65756460141883 0.943134641716211 0.474719393211504
+TR10487|c0_g1_i1_coral 6.57169761658039 0.727122969400975 0.363907404480523
+TR1069|c0_g1_i1_coral  4.14205241197446  4.49029083181354  1.98238112955566
+TR10748|c0_g1_i1_coral 2.93642320037697  1.78798410821023 0.559059118556594
+TR10773|c0_g1_i1_coral 3.02515761016279  1.75847746453697 0.659498298908414
+TR10773|c1_g1_i1_coral 2.32875934475272  1.29222344670373 0.632167692638483
+                                   stat              pvalue               padj
+                              <numeric>           <numeric>          <numeric>
+TR10090|c0_g2_i1_coral 1.98672027139201  0.0469534041233123  0.418043000342497
+TR10487|c0_g1_i1_coral 1.99809885824924  0.0457059435120877  0.412518610214263
+TR1069|c0_g1_i1_coral  2.26509966467448  0.0235065642111382  0.308653252532063
+TR10748|c0_g1_i1_coral 3.19820220950252 0.00138287275835452 0.0720091267133405
+TR10773|c0_g1_i1_coral 2.66638665702029 0.00766714549040745  0.173395444167676
+TR10773|c1_g1_i1_coral 2.04411497416195  0.0409421901910667                 NA
+> dim(genes4heatmap)
+[1] 866   6
+> data4heatmap<-scaledcounts[row.names(scaledcounts)%in%row.names(genes4heatmap),]
+> dim(data4heatmap)
+[1] 866  78
+> head(data4heatmap)
+                       RI_B_01_14 RI_B_01_18 RI_B_01_22 RI_B_02_14 RI_B_02_18 RI_B_02_22
+TR10090|c0_g2_i1_coral    0.00000   3.468731   2.447866   3.772786    0.00000   0.000000
+TR10487|c0_g1_i1_coral   10.94714   5.203096   8.567532   0.000000    0.00000   6.648979
+TR1069|c0_g1_i1_coral     0.00000   0.000000   0.000000   7.545573    3.45517   6.648979
+TR10748|c0_g1_i1_coral    0.00000   0.000000   2.447866   0.000000    0.00000   0.000000
+TR10773|c0_g1_i1_coral    0.00000   6.070279   2.447866   3.772786    0.00000   0.000000
+TR10773|c1_g1_i1_coral    0.00000   2.601548   4.895733   0.000000    0.00000   2.216326
+                       RI_B_03_14 RI_B_03_22 RI_B_04_14 RI_B_04_18 RI_B_04_22 RI_B_05_14
+TR10090|c0_g2_i1_coral   0.000000   3.818995   4.809473  3.6845136          0   0.570426
+TR10487|c0_g1_i1_coral   9.010379   5.091993   2.404737  4.5032943          0   9.126817
+TR1069|c0_g1_i1_coral    0.000000   0.000000   0.000000  0.0000000          0   0.000000
+TR10748|c0_g1_i1_coral   2.574394   0.000000   4.007894  2.8657328          0   1.711278
+TR10773|c0_g1_i1_coral   1.287197   0.000000   0.000000  0.4093904          0   0.000000
+TR10773|c1_g1_i1_coral   5.148788   1.272998   0.000000  0.0000000          0   0.285213
+                       RI_B_05_18 RI_B_05_22 RI_B_06_14 RI_B_06_18 RI_B_06_22 RI_B_07_14
+TR10090|c0_g2_i1_coral   0.000000  2.4538305          0   4.827992          0   3.734168
+TR10487|c0_g1_i1_coral   5.033716  0.8179435          0   2.758853          0   5.227835
+TR1069|c0_g1_i1_coral    0.000000  0.0000000          0   0.000000          0   0.000000
+TR10748|c0_g1_i1_coral   0.000000  0.0000000          0   0.000000          0   2.987334
+TR10773|c0_g1_i1_coral   0.000000  0.0000000          0   0.000000          0   0.000000
+TR10773|c1_g1_i1_coral   0.000000  0.8179435          0   0.000000          0   0.000000
+                       RI_B_07_18 RI_B_07_22 RI_W_01_18 RI_W_01_22 RI_W_02_14 RI_W_02_18
+TR10090|c0_g2_i1_coral   1.008773          0  12.257216   7.743994   4.651361  4.9947759
+TR10487|c0_g1_i1_coral   5.043864          0   8.652152   6.195195  16.279762  2.9968656
+TR1069|c0_g1_i1_coral    0.000000          0  10.094178   9.292792   0.000000  0.0000000
+TR10748|c0_g1_i1_coral   0.000000          0   0.000000   1.548799   4.651361  0.9989552
+TR10773|c0_g1_i1_coral   1.008773          0   7.931140  17.036786   0.000000 14.9843278
+TR10773|c1_g1_i1_coral   0.000000          0   5.047089  18.585585   0.000000 10.9885071
+                       RI_W_02_22 RI_W_03_14 RI_W_03_18 RI_W_03_22 RI_W_04_14 RI_W_04_18
+TR10090|c0_g2_i1_coral   4.820288   3.044865   3.244480   1.581919    0.00000  7.4421015
+TR10487|c0_g1_i1_coral   1.205072   7.307675   7.209956  14.237275   17.10086  5.4575411
+TR1069|c0_g1_i1_coral    0.000000   0.000000   0.000000   0.000000    0.00000  0.0000000
+TR10748|c0_g1_i1_coral   2.410144   2.435892   6.128462   4.218452    0.00000  0.4961401
+TR10773|c0_g1_i1_coral   6.025360  23.140971  12.617422  29.001856    0.00000  1.9845604
+TR10773|c1_g1_i1_coral   1.205072  10.352540   7.930951   7.382291    0.00000  1.4884203
+                       RI_W_05_14 RI_W_05_18 RI_W_05_22 RI_W_06_14 RI_W_06_18 RI_W_06_22
+TR10090|c0_g2_i1_coral   3.614931  10.107037   1.381659   3.133041   1.336966   7.790833
+TR10487|c0_g1_i1_coral   4.066797   4.042815   0.000000   4.177388  13.369662  10.016785
+TR1069|c0_g1_i1_coral    0.000000   0.000000   0.000000   0.000000   0.000000   0.000000
+TR10748|c0_g1_i1_coral   2.711198   1.010704   0.000000   3.133041   2.673932   2.225952
+TR10773|c0_g1_i1_coral   5.422396   2.021407   0.000000   5.221735   2.673932  10.016785
+TR10773|c1_g1_i1_coral   3.614931   3.032111   0.000000   1.044347   2.673932   3.338928
+                       RI_W_07_14 RI_W_07_18 RI_W_07_22 VA_B_01_14 VA_B_01_18 VA_B_01_22
+TR10090|c0_g2_i1_coral   2.062318   1.118603   5.520462  10.204629   5.628251   5.690194
+TR10487|c0_g1_i1_coral   3.437196  13.423242   8.280694  10.204629   6.494135  10.242350
+TR1069|c0_g1_i1_coral    0.000000   0.000000   0.000000  33.165045   9.524732  17.639603
+TR10748|c0_g1_i1_coral   2.749757   2.237207   0.000000   1.275579   1.298827   5.121175
+TR10773|c0_g1_i1_coral   1.374879   2.237207   0.000000   6.377893   4.762366   2.845097
+TR10773|c1_g1_i1_coral   2.062318   3.355810   2.760231   8.929051   6.061193   6.259214
+                       VA_B_02_14 VA_B_02_18 VA_B_02_22 VA_B_03_14 VA_B_03_18 VA_B_03_22
+TR10090|c0_g2_i1_coral   0.000000     0.0000   0.000000  10.929073   4.301848  3.5605530
+TR10487|c0_g1_i1_coral   0.000000     0.0000  17.166789  10.929073   7.886721  7.8332166
+TR1069|c0_g1_i1_coral   86.631891    44.0504  40.771123   0.000000   0.000000  0.0000000
+TR10748|c0_g1_i1_coral  30.575962     0.0000   2.145849   3.643024   7.886721  3.5605530
+TR10773|c0_g1_i1_coral   1.698665     0.0000   6.437546   0.000000   1.433949  0.7121106
+TR10773|c1_g1_i1_coral   0.000000     2.5912   0.000000   0.000000   3.584873  0.7121106
+                       VA_B_04_14 VA_B_04_18 VA_B_04_22 VA_B_05_14 VA_B_05_18 VA_B_05_22
+TR10090|c0_g2_i1_coral  7.1085175   3.152383   0.000000   1.399244  0.5528859   5.441030
+TR10487|c0_g1_i1_coral 15.1055996   4.053064   8.285065   4.547541 17.1394640  21.764122
+TR1069|c0_g1_i1_coral   0.0000000   0.000000   0.000000   0.000000  0.0000000   0.000000
+TR10748|c0_g1_i1_coral  2.6656940   0.000000   8.802882   1.049433  1.6586578   3.627354
+TR10773|c0_g1_i1_coral  0.0000000   7.205447   8.285065   1.399244  1.1057719   0.000000
+TR10773|c1_g1_i1_coral  0.8885647   8.556469   2.589083   0.000000  4.4230875   0.000000
+                       VA_B_06_14 VA_B_06_18 VA_B_06_22 VA_B_07_14 VA_B_07_18 VA_B_07_22
+TR10090|c0_g2_i1_coral   0.000000   4.206352   1.477470  1.4914137  15.552308   6.295498
+TR10487|c0_g1_i1_coral   0.000000   8.412704   2.462449  3.7285342   5.184103   8.393997
+TR1069|c0_g1_i1_coral   29.062864  16.825408   8.372327  0.0000000   0.000000   0.000000
+TR10748|c0_g1_i1_coral   6.919730   0.000000   2.954939  6.7113616   0.000000   4.196999
+TR10773|c0_g1_i1_coral   2.767892   0.000000   5.417388  1.4914137   2.962344   6.295498
+TR10773|c1_g1_i1_coral   0.000000   2.523811   2.462449  0.7457068   0.000000   4.196999
+                       VA_W_01_14 VA_W_01_18 VA_W_02_14 VA_W_02_18 VA_W_03_14 VA_W_03_22
+TR10090|c0_g2_i1_coral   0.000000   3.866328  4.3614889  13.082767  6.9966052   3.130966
+TR10487|c0_g1_i1_coral   6.699293   4.970993  1.7445956  13.082767  3.1096023   9.392897
+TR1069|c0_g1_i1_coral    0.000000   0.000000  0.0000000   0.000000  0.0000000   0.000000
+TR10748|c0_g1_i1_coral   2.871126   2.209330  0.8722978   0.000000  0.7774006   3.757159
+TR10773|c0_g1_i1_coral   5.742251   1.104665  0.0000000   3.924830  1.5548011   2.504773
+TR10773|c1_g1_i1_coral   0.000000   3.866328  0.0000000   5.233107  0.7774006   2.504773
+                       VA_W_04_14 VA_W_04_18 VA_W_04_22 VA_W_05_14 VA_W_05_18 VA_W_05_22
+TR10090|c0_g2_i1_coral   2.053504   7.705540 10.8488424    0.00000   2.748941   7.427894
+TR10487|c0_g1_i1_coral   3.593631  13.003099  1.4793876    0.00000   8.246822   8.665876
+TR1069|c0_g1_i1_coral    0.000000   0.000000  0.0000000    0.00000   0.000000   0.000000
+TR10748|c0_g1_i1_coral   6.673887   9.150329  7.3969380   14.61366   2.748941   9.903859
+TR10773|c0_g1_i1_coral   1.026752   0.000000  0.4931292    0.00000   0.000000   0.000000
+TR10773|c1_g1_i1_coral   1.026752   0.000000  0.0000000    0.00000   2.199153   1.237982
+                       VA_W_06_14 VA_W_06_18 VA_W_06_22 VA_W_07_14 VA_W_07_18 VA_W_07_22
+TR10090|c0_g2_i1_coral   3.025641  0.8631729   0.000000   5.517448   3.382824   2.842023
+TR10487|c0_g1_i1_coral  10.085470  1.7263459  11.466093   7.093862   6.765648   3.789363
+TR1069|c0_g1_i1_coral    0.000000  0.0000000   0.000000   0.000000   0.000000   0.000000
+TR10748|c0_g1_i1_coral   2.017094  6.0422105   4.410036   0.000000   3.382824   1.894682
+TR10773|c0_g1_i1_coral   0.000000  1.7263459   0.000000   0.000000   0.000000   0.000000
+TR10773|c1_g1_i1_coral   2.017094  0.8631729   5.292043   0.000000   0.000000   0.000000
+> temp = as.matrix(rowMeans(data4heatmap))
+> head(temp)
+                           [,1]
+TR10090|c0_g2_i1_coral 3.657565
+TR10487|c0_g1_i1_coral 6.571698
+TR1069|c0_g1_i1_coral  4.142052
+TR10748|c0_g1_i1_coral 2.936423
+TR10773|c0_g1_i1_coral 3.025158
+TR10773|c1_g1_i1_coral 2.328759
+> scaledmatrix<-matrix(data=temp, nrow=nrow(data4heatmap), ncol=ncol(data4heatmap), byrow=FALSE)
+> data4heatmapscaled = data4heatmap/scaledmatrix
+> head(data4heatmapscaled)
+                       RI_B_01_14 RI_B_01_18 RI_B_01_22 RI_B_02_14 RI_B_02_18 RI_B_02_22
+TR10090|c0_g2_i1_coral   0.000000  0.9483717  0.6692613   1.031502  0.0000000  0.0000000
+TR10487|c0_g1_i1_coral   1.665801  0.7917431  1.3037015   0.000000  0.0000000  1.0117598
+TR1069|c0_g1_i1_coral    0.000000  0.0000000  0.0000000   1.821699  0.8341687  1.6052378
+TR10748|c0_g1_i1_coral   0.000000  0.0000000  0.8336218   0.000000  0.0000000  0.0000000
+TR10773|c0_g1_i1_coral   0.000000  2.0065992  0.8091699   1.247137  0.0000000  0.0000000
+TR10773|c1_g1_i1_coral   0.000000  1.1171391  2.1022922   0.000000  0.0000000  0.9517198
+                       RI_B_03_14 RI_B_03_22 RI_B_04_14 RI_B_04_18 RI_B_04_22 RI_B_05_14
+TR10090|c0_g2_i1_coral  0.0000000  1.0441360  1.3149387  1.0073680          0  0.1559579
+TR10487|c0_g1_i1_coral  1.3710885  0.7748368  0.3659232  0.6852559          0  1.3888066
+TR1069|c0_g1_i1_coral   0.0000000  0.0000000  0.0000000  0.0000000          0  0.0000000
+TR10748|c0_g1_i1_coral  0.8767109  0.0000000  1.3648899  0.9759263          0  0.5827764
+TR10773|c0_g1_i1_coral  0.4254975  0.0000000  0.0000000  0.1353286          0  0.0000000
+TR10773|c1_g1_i1_coral  2.2109576  0.5466423  0.0000000  0.0000000          0  0.1224742
+                       RI_B_05_18 RI_B_05_22 RI_B_06_14 RI_B_06_18 RI_B_06_22 RI_B_07_14
+TR10090|c0_g2_i1_coral  0.0000000  0.6708919          0  1.3200019          0  1.0209437
+TR10487|c0_g1_i1_coral  0.7659688  0.1244646          0  0.4198082          0  0.7955075
+TR1069|c0_g1_i1_coral   0.0000000  0.0000000          0  0.0000000          0  0.0000000
+TR10748|c0_g1_i1_coral  0.0000000  0.0000000          0  0.0000000          0  1.0173377
+TR10773|c0_g1_i1_coral  0.0000000  0.0000000          0  0.0000000          0  0.0000000
+TR10773|c1_g1_i1_coral  0.0000000  0.3512357          0  0.0000000          0  0.0000000
+                       RI_B_07_18 RI_B_07_22 RI_W_01_18 RI_W_01_22 RI_W_02_14 RI_W_02_18
+TR10090|c0_g2_i1_coral  0.2758045          0   3.351196  2.1172541   1.271710  1.3656016
+TR10487|c0_g1_i1_coral  0.7675130          0   1.316578  0.9427084   2.477254  0.4560261
+TR1069|c0_g1_i1_coral   0.0000000          0   2.436999  2.2435236   0.000000  0.0000000
+TR10748|c0_g1_i1_coral  0.0000000          0   0.000000  0.5274440   1.584023  0.3401946
+TR10773|c0_g1_i1_coral  0.3334612          0   2.621728  5.6317019   0.000000  4.9532387
+TR10773|c1_g1_i1_coral  0.0000000          0   2.167287  7.9808953   0.000000  4.7186100
+                       RI_W_02_22 RI_W_03_14 RI_W_03_18 RI_W_03_22 RI_W_04_14 RI_W_04_18
+TR10090|c0_g2_i1_coral  1.3178956  0.8324842  0.8870602  0.4325062   0.000000  2.0347150
+TR10487|c0_g1_i1_coral  0.1833730  1.1119920  1.0971223  2.1664531   2.602198  0.8304614
+TR1069|c0_g1_i1_coral   0.0000000  0.0000000  0.0000000  0.0000000   0.000000  0.0000000
+TR10748|c0_g1_i1_coral  0.8207755  0.8295438  2.0870501  1.4365953   0.000000  0.1689607
+TR10773|c0_g1_i1_coral  1.9917509  7.6495091  4.1708314  9.5868908   0.000000  0.6560188
+TR10773|c1_g1_i1_coral  0.5174739  4.4455171  3.4056552  3.1700530   0.000000  0.6391473
+                       RI_W_05_14 RI_W_05_18 RI_W_05_22 RI_W_06_14 RI_W_06_18 RI_W_06_22
+TR10090|c0_g2_i1_coral  0.9883436  2.7633244  0.3777539  0.8565921  0.3655346  2.1300602
+TR10487|c0_g1_i1_coral  0.6188351  0.6151858  0.0000000  0.6356634  2.0344306  1.5242310
+TR1069|c0_g1_i1_coral   0.0000000  0.0000000  0.0000000  0.0000000  0.0000000  0.0000000
+TR10748|c0_g1_i1_coral  0.9232995  0.3441955  0.0000000  1.0669582  0.9106087  0.7580488
+TR10773|c0_g1_i1_coral  1.7924342  0.6681991  0.0000000  1.7261033  0.8838986  3.3111614
+TR10773|c1_g1_i1_coral  1.5522989  1.3020286  0.0000000  0.4484564  1.1482219  1.4337799
+                       RI_W_07_14 RI_W_07_18 RI_W_07_22 VA_B_01_14 VA_B_01_18 VA_B_01_22
+TR10090|c0_g2_i1_coral  0.5638500  0.3058329   1.509327  2.7900066  1.5387973   1.555733
+TR10487|c0_g1_i1_coral  0.5230302  2.0425836   1.260054  1.5528148  0.9881975   1.558555
+TR1069|c0_g1_i1_coral   0.0000000  0.0000000   0.000000  8.0069110  2.2995199   4.258662
+TR10748|c0_g1_i1_coral  0.9364308  0.7618816   0.000000  0.4343988  0.4423160   1.744018
+TR10773|c0_g1_i1_coral  0.4544816  0.7395340   0.000000  2.1082846  1.5742538   0.940479
+TR10773|c1_g1_i1_coral  0.8855865  1.4410293   1.185280  3.8342522  2.6027562   2.687789
+                       VA_B_02_14 VA_B_02_18 VA_B_02_22 VA_B_03_14 VA_B_03_18 VA_B_03_22
+TR10090|c0_g2_i1_coral  0.0000000   0.000000  0.0000000   2.988074  1.1761509  0.9734764
+TR10487|c0_g1_i1_coral  0.0000000   0.000000  2.6122305   1.663052  1.2001041  1.1919624
+TR1069|c0_g1_i1_coral  20.9152088  10.634922  9.8432176   0.000000  0.0000000  0.0000000
+TR10748|c0_g1_i1_coral 10.4126549   0.000000  0.7307695   1.240633  2.6858257  1.2125476
+TR10773|c0_g1_i1_coral  0.5615127   0.000000  2.1280034   0.000000  0.4740081  0.2353962
+TR10773|c1_g1_i1_coral  0.0000000   1.112696  0.0000000   0.000000  1.5393918  0.3057897
+                       VA_B_04_14 VA_B_04_18 VA_B_04_22 VA_B_05_14 VA_B_05_18 VA_B_05_22
+TR10090|c0_g2_i1_coral  1.9435111  0.8618804   0.000000  0.3825615  0.1511623   1.487610
+TR10487|c0_g1_i1_coral  2.2985841  0.6167454   1.260719  0.6919888  2.6080725   3.311796
+TR1069|c0_g1_i1_coral   0.0000000  0.0000000   0.000000  0.0000000  0.0000000   0.000000
+TR10748|c0_g1_i1_coral  0.9078031  0.0000000   2.997825  0.3573847  0.5648565   1.235297
+TR10773|c0_g1_i1_coral  0.0000000  2.3818420   2.738722  0.4625357  0.3655254   0.000000
+TR10773|c1_g1_i1_coral  0.3815614  3.6742606   1.111786  0.0000000  1.8993321   0.000000
+                       VA_B_06_14 VA_B_06_18 VA_B_06_22 VA_B_07_14 VA_B_07_18 VA_B_07_22
+TR10090|c0_g2_i1_coral  0.0000000   1.150042  0.4039490  0.4077614  4.2520938   1.721227
+TR10487|c0_g1_i1_coral  0.0000000   1.280142  0.3747052  0.5673624  0.7888529   1.277295
+TR1069|c0_g1_i1_coral   7.0165371   4.062094  2.0212992  0.0000000  0.0000000   0.000000
+TR10748|c0_g1_i1_coral  2.3565165   0.000000  1.0063056  2.2855567  0.0000000   1.429289
+TR10773|c0_g1_i1_coral  0.9149579   0.000000  1.7907788  0.4930036  0.9792364   2.081048
+TR10773|c1_g1_i1_coral  0.0000000   1.083758  1.0574082  0.3202164  0.0000000   1.802247
+                       VA_W_01_14 VA_W_01_18 VA_W_02_14 VA_W_02_18 VA_W_03_14 VA_W_03_22
+TR10090|c0_g2_i1_coral  0.0000000  1.0570771  1.1924571   3.576907  1.9129136  0.8560247
+TR10487|c0_g1_i1_coral  1.0194159  0.7564245  0.2654711   1.990774  0.4731810  1.4292954
+TR1069|c0_g1_i1_coral   0.0000000  0.0000000  0.0000000   0.000000  0.0000000  0.0000000
+TR10748|c0_g1_i1_coral  0.9777629  0.7523882  0.2970613   0.000000  0.2647441  1.2795019
+TR10773|c0_g1_i1_coral  1.8981660  0.3651595  0.0000000   1.297397  0.5139571  0.8279809
+TR10773|c1_g1_i1_coral  0.0000000  1.6602522  0.0000000   2.247165  0.3338261  1.0755824
+                       VA_W_04_14 VA_W_04_18 VA_W_04_22 VA_W_05_14 VA_W_05_18 VA_W_05_22
+TR10090|c0_g2_i1_coral  0.5614402   2.106741  2.9661383   0.000000  0.7515768   2.030831
+TR10487|c0_g1_i1_coral  0.5468346   1.978651  0.2251150   0.000000  1.2548999   1.318666
+TR1069|c0_g1_i1_coral   0.0000000   0.000000  0.0000000   0.000000  0.0000000   0.000000
+TR10748|c0_g1_i1_coral  2.2727947   3.116148  2.5190299   4.976688  0.9361528   3.372763
+TR10773|c0_g1_i1_coral  0.3394044   0.000000  0.1630094   0.000000  0.0000000   0.000000
+TR10773|c1_g1_i1_coral  0.4409008   0.000000  0.0000000   0.000000  0.9443452   0.531606
+                       VA_W_06_14 VA_W_06_18 VA_W_06_22 VA_W_07_14 VA_W_07_18 VA_W_07_22
+TR10090|c0_g2_i1_coral  0.8272283  0.2359966   0.000000   1.508503  0.9248843  0.7770259
+TR10487|c0_g1_i1_coral  1.5346826  0.2626940   1.744769   1.079457  1.0295131  0.5766186
+TR1069|c0_g1_i1_coral   0.0000000  0.0000000   0.000000   0.000000  0.0000000  0.0000000
+TR10748|c0_g1_i1_coral  0.6869221  2.0576770   1.501839   0.000000  1.1520220  0.6452345
+TR10773|c0_g1_i1_coral  0.0000000  0.5706631   0.000000   0.000000  0.0000000  0.0000000
+TR10773|c1_g1_i1_coral  0.8661668  0.3706578   2.272473   0.000000  0.0000000  0.0000000
+> dim(data4heatmapscaled)
+[1] 866  78
+> pairs.breaks <- seq(0, 3.0, by=0.1)
+> length(pairs.breaks)
+[1] 31
+> mycol <- colorpanel(n=30, low="black", high="yellow")
+> pdf(file="XXXXXX_byrow.pdf",7,7)
+> heatmap.2(data.matrix(data4heatmapscaled), Rowv=T, Colv=F, dendrogram = c("row"), scale="none", keysize=1, breaks=pairs.breaks, col=mycol, trace = "none", symkey = F, density.info = "density", colsep=c(24), sepcolor=c("white"), sepwidth=c(.1,.1), margins=c(10,10), labRow=F)
+> dev.off()
+RStudioGD 
+        2 
+> pdf(file="XXXXXX_bycolumn.pdf",7,7)
+> heatmap.2(data.matrix(data4heatmapscaled), Rowv=T, Colv=T, dendrogram = c("col"), scale="none", keysize=1, breaks=pairs.breaks, col=mycol, trace = "none", symkey = F, density.info = "density", colsep=c(24), sepcolor=c("white"), sepwidth=c(.1,.1), margins=c(10,10), labRow=F)
+> dev.off()
+RStudioGD 
+        2 
+> plotPCA(vstCounts[rownames(vstCounts)%in%row.names(genes4heatmap),], intgroup="Origin")
+> plotPCA(vstCounts[rownames(vstCounts)%in%row.names(genes4heatmap),], intgroup="SymState")
+> plotPCA(vstCounts[rownames(vstCounts)%in%row.names(genes4heatmap),], intgroup="Temp")
+> plotPCA(vstCounts[rownames(vstCounts)%in%row.names(genes4heatmap),], intgroup="Origin_SymState")
+> plotPCA(vstCounts[rownames(vstCounts)%in%row.names(genes4heatmap),], intgroup="Origin_SymState_Temp")
+> pdf(file="866_RIvsVA_PCAv2.pdf",14, 14)
+> plotPCA(vstCounts[rownames(vstCounts)%in%row.names(genes4heatmap),], intgroup="Origin")
+> dev.off()
+pdf 
+  4 
+> prop.nullv3 <- apply(countsTable[rownames(countsTable)%in%row.names(genes4heatmap),], 2, function(x) 100*mean(x==0))
+> barplot(prop.nullv3, main="Percentage of null counts per sample", 
++         horiz=TRUE, cex.names=0.5, las=1, 
++         col=conds$Origin_SymState_Temp, ylab='Samples', xlab='% of null counts')
+> pdf(file="ResNullCountsv2.pdf",14, 14)
+> barplot(prop.nullv3, main="Percentage of null counts per sample", 
++         horiz=TRUE, cex.names=0.5, las=1, 
++         col=conds$Origin_SymState_Temp, ylab='Samples', xlab='% of null counts')
+> dev.off()
+pdf 
+  4 
+> distsv2<-dist(t(assay(vstCounts[rownames(vstCounts)%in%row.names(genes4heatmap),])))
+> plot(hclust(distsv2))
+> heatmap.2(as.matrix(distsv2), key=F, trace="none",
++           col=colorpanel(100, "black", "white"),
++           margin=c(10, 10))
+> res<-resOrigin
+> Annotations<-read.delim("Assembly_GoodCoralSymbiont_suffixed_totalannotated.txt")
+> head(res)
+log2 fold change (MLE): Origin VA vs RI 
+Wald test p-value: Origin VA vs RI 
+DataFrame with 6 rows and 6 columns
+                               baseMean      log2FoldChange             lfcSE
+                              <numeric>           <numeric>         <numeric>
+TR10083|c0_g2_i1_coral   5.366479327573  -0.271242746289843 0.446224512750353
+TR10090|c0_g1_i1_coral 2.70436251126018    1.11251170496561 0.589306266446119
+TR10090|c0_g2_i1_coral 3.65756460141883   0.943134641716211 0.474719393211504
+TR10103|c0_g1_i1_coral  2.9127886212765  0.0386642676540012 0.456719612483097
+TR10108|c0_g1_i1_coral 6.31144026709945 -0.0179009694277555 0.461957599914831
+TR10132|c0_g1_i1_coral  9.2673703948612  -0.264990306479184 0.677607561801266
+                                      stat             pvalue              padj
+                                 <numeric>          <numeric>         <numeric>
+TR10083|c0_g2_i1_coral  -0.607861600022842  0.543279269700006 0.865660813784253
+TR10090|c0_g1_i1_coral    1.88783281005095 0.0590483989759312                NA
+TR10090|c0_g2_i1_coral    1.98672027139201 0.0469534041233123 0.418043000342497
+TR10103|c0_g1_i1_coral  0.0846564644854882  0.932534507970102 0.984590265229257
+TR10108|c0_g1_i1_coral -0.0387502433795997  0.969089515041603 0.992149683420423
+TR10132|c0_g1_i1_coral  -0.391067516682912  0.695747330435347 0.921516804624192
+> sum(res$log2FoldChange!=0)
+[1] 7659
+> genes<-as.integer(p.adjust(res$pvalue[res$log2FoldChange!=0 & !is.na(res$pvalue)], method="BH")<.05)
+> names(genes)<-row.names(res[res$log2FoldChange!=0 & !is.na(res$pvalue),])
+> table(genes)
+genes
+   0    1 
+7533  116 
+> goterms<-strsplit(as.character(Annotations$GO), split=" // ")
+> names(goterms)<-Annotations$ContigName
+> pwf<-nullp(genes, bias.data=Annotations[Annotations$ContigName%in%names(genes),"ContigLength"])
+Warning message:
+In pcls(G) : initial point very close to some inequality constraints
+> GOGOGO<-goseq(pwf,gene2cat=goterms)
+Using manually entered categories.
+Calculating the p-values...
+'select()' returned 1:1 mapping between keys and columns
+> GOGOGO$padj<-p.adjust(GOGOGO$over_represented_pvalue, method="fdr")
+> sum(GOGOGO$padj<0.2, na.rm=T)
+[1] 3
+> sum(GOGOGO$padj<0.1, na.rm=T)
+[1] 2
+> sum(GOGOGO$padj<0.05, na.rm=T)
+[1] 2
+> GOGOGO[GOGOGO$padj<0.05,]
+       category over_represented_pvalue under_represented_pvalue numDEInCat numInCat
+1326 GO:0006032            3.838364e-08                        1          5        8
+74   GO:0000272            8.726516e-07                        1          5       13
+                                 term ontology         padj
+1326         chitin catabolic process       BP 0.0003557012
+74   polysaccharide catabolic process       BP 0.0040434313
+> GOTERM[["SOMEGOTERM"]]
+NULL
+> EnGOS<-GOGOGO$category[p.adjust(GOGOGO$over_represented_pvalue, method="BH")<.05]
+> for(go in EnGOS){
++   print(GOTERM[[go]])
++   cat("--------------------------------------\n")}
+GOID: GO:0006032
+Term: chitin catabolic process
+Ontology: BP
+Definition: The chemical reactions and pathways resulting in the breakdown of
+    chitin, a linear polysaccharide consisting of beta-(1->4)-linked
+    N-acetyl-D-glucosamine residues.
+Synonym: beta-1,4-linked N-acetylglucosamine catabolic process
+Synonym: beta-1,4-linked N-acetylglucosamine catabolism
+Synonym: chitin breakdown
+Synonym: chitin catabolism
+Synonym: chitin degradation
+--------------------------------------
+GOID: GO:0000272
+Term: polysaccharide catabolic process
+Ontology: BP
+Definition: The chemical reactions and pathways resulting in the breakdown of a
+    polysaccharide, a polymer of many (typically more than 10) monosaccharide
+    residues linked glycosidically.
+Synonym: multicellular organismal polysaccharide catabolic process
+Synonym: polysaccharide breakdown
+Synonym: polysaccharide catabolism
+Synonym: polysaccharide degradation
+Synonym: GO:0044244
+Secondary: GO:0044244
+--------------------------------------
+> 
+> 
+> 
+> 
+> names(Annotations)
+ [1] "ContigName"              "ContigLength"           
+ [3] "topnrMatch"              "topnrEvalue"            
+ [5] "topnrAlignmentLength"    "topnrPercMatch"         
+ [7] "nobadwordnrMatch"        "nobadwordnrEvalue"      
+ [9] "nobadwordnrAlignLength"  "nobadwordnrPercentMatch"
+[11] "Uniprotmatch"            "X._identity"            
+[13] "evalue"                  "ID"                     
+[15] "Description"             "KEGG"                   
+[17] "KEGGKO"                  "PFAM"                   
+[19] "GO"                      "GOCC"                   
+[21] "GOBP"                    "GOMF"                   
+[23] "Keywords"               
+> head(Annotations)
+              ContigName ContigLength
+1   TR10030|c0_g1_i1_sym          523
+2   TR10043|c0_g1_i1_sym          512
+3   TR10050|c0_g1_i1_sym          793
+4 TR10054|c0_g1_i1_coral          548
+5 TR10054|c0_g2_i1_coral          811
+6   TR10082|c0_g2_i1_sym         1176
+                                                                                                                                                              topnrMatch
+1                                                                           gnl|BL_ORD_ID|101380155 OLP92908.1 Sodium/calcium exchanger 1 [Symbiodinium microadriaticum]
+2                                                             gnl|BL_ORD_ID|101372287 OLP84974.1 hypothetical protein AK812_SmicGene34099 [Symbiodinium microadriaticum]
+3                                                                                                                                                          No_sig_nr_hit
+4                                                                                     gnl|BL_ORD_ID|110384373 XP_020612383.1 titin-like isoform X4 [Orbicella faveolata]
+5                                                                                     gnl|BL_ORD_ID|110384422 XP_020612382.1 titin-like isoform X3 [Orbicella faveolata]
+6 gnl|BL_ORD_ID|14605113 XP_002785881.1 sugar transporter, putative [Perkinsus marinus ATCC 50983] EER17677.1 sugar transporter, putative [Perkinsus marinus ATCC 50983]
+    topnrEvalue topnrAlignmentLength topnrPercMatch
+1   5.74325e-73                  167           0.74
+2   5.42819e-23                   80           0.66
+3 No_sig_nr_hit        No_sig_nr_hit  No_sig_nr_hit
+4   8.93129e-73                  182           0.90
+5   1.31886e-95                  250           0.82
+6   1.07378e-49                  289           0.37
+                                                                                                                                                        nobadwordnrMatch
+1                                                                           gnl|BL_ORD_ID|101380155 OLP92908.1 Sodium/calcium exchanger 1 [Symbiodinium microadriaticum]
+2                                                                  gnl|BL_ORD_ID|51120734 XP_012166226.1 E3 ubiquitin-protein ligase RNF146, partial [Bombus terrestris]
+3                                                                                                                                                          No_sig_nr_hit
+4                                                                                     gnl|BL_ORD_ID|110384373 XP_020612383.1 titin-like isoform X4 [Orbicella faveolata]
+5                                                                                     gnl|BL_ORD_ID|110384422 XP_020612382.1 titin-like isoform X3 [Orbicella faveolata]
+6 gnl|BL_ORD_ID|14605113 XP_002785881.1 sugar transporter, putative [Perkinsus marinus ATCC 50983] EER17677.1 sugar transporter, putative [Perkinsus marinus ATCC 50983]
+  nobadwordnrEvalue nobadwordnrAlignLength nobadwordnrPercentMatch
+1       5.74325e-73                    167                    0.74
+2        8.8118e-05                     58                    0.38
+3     No_sig_nr_hit          No_sig_nr_hit           No_sig_nr_hit
+4       8.93129e-73                    182                    0.90
+5       1.31886e-95                    250                    0.82
+6       1.07378e-49                    289                    0.37
+     Uniprotmatch   X._identity    evalue               ID
+1      A0A1Q9DCJ4        74.251  3.76e-73 A0A1Q9DCJ4_SYMMI
+2          C0HBT3        29.114  3.65e-05      RN146_SALSA
+3 No_Uniprotmatch No_%_identity No_evalue            No_ID
+4      A0A2B4SVR7        77.473  8.77e-57 A0A2B4SVR7_STYPI
+5      A0A2B4SVR7        72.112  5.57e-76 A0A2B4SVR7_STYPI
+6          Q02334        21.402  2.12e-05      UGTP1_CAEEL
+                                                                          Description
+1                            Sodium/calcium exchanger 1 {ECO:0000313|EMBL:OLP92908.1}
+2                                                  E3 ubiquitin-protein ligase rnf146
+3                                                                      No_Description
+4 Golgi-associated plant pathogenesis-related protein 1 {ECO:0000313|EMBL:PFX34774.1}
+5 Golgi-associated plant pathogenesis-related protein 1 {ECO:0000313|EMBL:PFX34774.1}
+6                                                        UDP-galactose translocator 1
+              KEGG    KEGGKO                                  PFAM
+1          No_KEGG No_KEGGKO PF00063; Myosin_head,  PF07647; SAM_2
+2   sasa:100380617    K15700                          PF02825; WWE
+3          No_KEGG No_KEGGKO                               No_PFAM
+4          No_KEGG No_KEGGKO                          PF00188; CAP
+5          No_KEGG No_KEGGKO                          PF00188; CAP
+6 cel:CELE_ZK370.7    K15272               PF04142; Nuc_sug_transp
+                                                                                                                                                      GO
+1                                                                                     GO:0016021 // GO:0016459 // GO:0005524 // GO:0003774 // GO:0003676
+2 GO:0005829 // GO:0005634 // GO:0072572 // GO:0061630 // GO:0004842 // GO:0008270 // GO:0090263 // GO:0051865 // GO:0070936 // GO:0006511 // GO:0016055
+3                                                                                                                                                  No_GO
+4                                                                                                                                             GO:0005576
+5                                                                                                                                             GO:0005576
+6                                                         GO:0060473 // GO:0005794 // GO:0005797 // GO:0030173 // GO:0015165 // GO:0015136 // GO:0008643
+                                                                                                                                                                                                                                                       GOCC
+1                                                                                                                                                                                                                                                   No_GOBP
+2 positive regulation of canonical Wnt signaling pathway (GO:0090263);protein autoubiquitination (GO:0051865);protein K48-linked ubiquitination (GO:0070936);ubiquitin-dependent protein catabolic process (GO:0006511);Wnt signaling pathway (GO:0016055);
+3                                                                                                                                                                                                                                                   No_GOCC
+4                                                                                                                                                                                                                                                   No_GOBP
+5                                                                                                                                                                                                                                                   No_GOBP
+6                                                                                                                                                                                                                      carbohydrate transport (GO:0008643);
+                                                                                                                                                                      GOBP
+1                                                                                  ATP binding (GO:0005524);motor activity (GO:0003774);nucleic acid binding (GO:0003676);
+2 poly-ADP-D-ribose binding (GO:0072572);ubiquitin protein ligase activity (GO:0061630);ubiquitin-protein transferase activity (GO:0004842);zinc ion binding (GO:0008270);
+3                                                                                                                                                                  No_GOBP
+4                                                                                                                                                                  No_GOMF
+5                                                                                                                                                                  No_GOMF
+6                                 pyrimidine nucleotide-sugar transmembrane transporter activity (GO:0015165);sialic acid transmembrane transporter activity (GO:0015136);
+                                                                                                                                              GOMF
+1                                                                         integral component of membrane (GO:0016021);myosin complex (GO:0016459);
+2                                                                                                       cytosol (GO:0005829);nucleus (GO:0005634);
+3                                                                                                                                          No_GOMF
+4                                                                                                               extracellular region (GO:0005576);
+5                                                                                                               extracellular region (GO:0005576);
+6 cortical granule (GO:0060473);Golgi apparatus (GO:0005794);Golgi medial cisterna (GO:0005797);integral component of Golgi membrane (GO:0030173);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Keywords
+1 ATP-binding {ECO:0000256|SAAS:SAAS00875240};Coiled coil {ECO:0000256|SAM:Coils};Membrane {ECO:0000256|SAM:Phobius};Metal-binding {ECO:0000256|PROSITE-ProRule:PRU00175};Motor protein {ECO:0000256|SAAS:SAAS01033784};Myosin {ECO:0000256|SAAS:SAAS01033784};Nucleotide-binding {ECO:0000256|SAAS:SAAS00875240};Transmembrane {ECO:0000256|SAM:Phobius};Transmembrane helix {ECO:0000256|SAM:Phobius};Zinc {ECO:0000256|PROSITE-ProRule:PRU00175};Zinc-finger {ECO:0000256|PROSITE-ProRule:PRU00175}.;
+2                                                                                                                                                                                                                                                                                                                                                      Complete proteome;Cytoplasm;Metal-binding;Nucleus;Reference proteome;Transferase;Ubl conjugation pathway;Wnt signaling pathway;Zinc;Zinc-finger.;
+3                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            No_keywords
+4                                                                                                                                                                                                                                                                                                                                                     Coiled coil {ECO:0000256|SAM:Coils};Complete proteome {ECO:0000313|Proteomes:UP000225706};Reference proteome {ECO:0000313|Proteomes:UP000225706}.;
+5                                                                                                                                                                                                                                                                                                                                                     Coiled coil {ECO:0000256|SAM:Coils};Complete proteome {ECO:0000313|Proteomes:UP000225706};Reference proteome {ECO:0000313|Proteomes:UP000225706}.;
+6                                                                                                                                                                                                                                                                                                                                                                                            Complete proteome;Membrane;Reference proteome;Sugar transport;Transmembrane;Transmembrane helix;Transport.;
+> dim(genes4heatmap)
+[1] 866   6
